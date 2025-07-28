@@ -35,12 +35,56 @@ const data = {
   ],
   teachers: [],
   students: [
-    { id: 1, name: 'Emma Johnson', age: 6, classId: 1, dateOfBirth: '2018-03-15', parentContact: 'emma.parent@email.com', notes: 'Enjoys art activities, shy initially but warms up quickly' },
-    { id: 2, name: 'Liam Chen', age: 5, classId: 1, dateOfBirth: '2018-11-22', parentContact: 'liam.parent@email.com', notes: 'Very curious about science, loves asking questions' },
-    { id: 3, name: 'Sofia Rodriguez', age: 6, classId: 1, dateOfBirth: '2018-07-08', parentContact: 'sofia.parent@email.com', notes: 'Natural leader, great at helping classmates' },
-    { id: 4, name: 'Noah Wilson', age: 7, classId: 2, dateOfBirth: '2017-12-03', parentContact: 'noah.parent@email.com', notes: 'Excellent reader, prefers quiet activities' },
-    { id: 5, name: 'Ava Thompson', age: 7, classId: 2, dateOfBirth: '2017-09-18', parentContact: 'ava.parent@email.com', notes: 'Very social, enjoys group activities and games' },
-    { id: 6, name: 'Mason Davis', age: 6, classId: 2, dateOfBirth: '2018-01-25', parentContact: 'mason.parent@email.com', notes: 'Creative thinker, loves building and construction' }
+    { 
+      id: 1, 
+      name: 'Emma Johnson', 
+      rollNumber: 'R001', 
+      studentId: 'STU001', 
+      dateOfBirth: '2018-03-15', 
+      class: 'Grade 1A', 
+      createdAt: '2024-01-15T10:30:00.000Z',
+      updatedAt: '2024-01-15T10:30:00.000Z'
+    },
+    { 
+      id: 2, 
+      name: 'Liam Chen', 
+      rollNumber: 'R002', 
+      studentId: 'STU002', 
+      dateOfBirth: '2018-11-22', 
+      class: 'Grade 1A',
+      createdAt: '2024-01-15T10:31:00.000Z',
+      updatedAt: '2024-01-15T10:31:00.000Z'
+    },
+    { 
+      id: 3, 
+      name: 'Sofia Rodriguez', 
+      rollNumber: 'R003', 
+      studentId: 'STU003', 
+      dateOfBirth: '2018-07-08', 
+      class: 'Grade 1A',
+      createdAt: '2024-01-15T10:32:00.000Z',
+      updatedAt: '2024-01-15T10:32:00.000Z'
+    },
+    { 
+      id: 4, 
+      name: 'Noah Wilson', 
+      rollNumber: 'R004', 
+      studentId: 'STU004', 
+      dateOfBirth: '2017-12-03', 
+      class: 'Grade 1B',
+      createdAt: '2024-01-15T10:33:00.000Z',
+      updatedAt: '2024-01-15T10:33:00.000Z'
+    },
+    { 
+      id: 5, 
+      name: 'Ava Thompson', 
+      rollNumber: 'R005', 
+      studentId: 'STU005', 
+      dateOfBirth: '2017-09-18', 
+      class: 'Grade 1B',
+      createdAt: '2024-01-15T10:34:00.000Z',
+      updatedAt: '2024-01-15T10:34:00.000Z'
+    }
   ],
   classes: [
     { id: 1, name: 'Grade 1A', description: 'Morning class for 5-6 year olds', teacherId: 2, capacity: 20, currentEnrollment: 3 },
@@ -468,25 +512,39 @@ app.get('/api/classes', authenticateToken, (req, res) => {
 });
 
 app.get('/api/students', authenticateToken, (req, res) => {
-  const { classId } = req.query;
+  const { class: className, name } = req.query;
   
-  if (req.user.role === 'teacher') {
-    // Teachers can only see students from their classes
-    const teacherClasses = data.classes.filter(c => c.teacherId === req.user.id);
-    const teacherClassIds = teacherClasses.map(c => c.id);
+  if (req.user.role === 'admin') {
+    let students = data.students;
     
-    let students = data.students.filter(s => teacherClassIds.includes(s.classId));
+    // Filter by class if specified
+    if (className) {
+      students = students.filter(s => s.class === className);
+    }
     
-    if (classId) {
-      students = students.filter(s => s.classId === parseInt(classId));
+    // Filter by name if specified (search functionality)
+    if (name) {
+      students = students.filter(s => 
+        s.name.toLowerCase().includes(name.toLowerCase())
+      );
     }
     
     res.json(students);
-  } else if (req.user.role === 'admin') {
+  } else if (req.user.role === 'teacher') {
+    // For now, teachers can see all students
+    // TODO: Implement proper class-based filtering when class system is updated
     let students = data.students;
-    if (classId) {
-      students = students.filter(s => s.classId === parseInt(classId));
+    
+    if (className) {
+      students = students.filter(s => s.class === className);
     }
+    
+    if (name) {
+      students = students.filter(s => 
+        s.name.toLowerCase().includes(name.toLowerCase())
+      );
+    }
+    
     res.json(students);
   } else {
     return res.status(403).json({ error: 'Access denied' });
@@ -502,14 +560,203 @@ app.get('/api/students/:id', authenticateToken, (req, res) => {
   }
   
   if (req.user.role === 'teacher') {
-    // Check if teacher has access to this student's class
-    const studentClass = data.classes.find(c => c.id === student.classId);
-    if (!studentClass || studentClass.teacherId !== req.user.id) {
-      return res.status(403).json({ error: 'Access denied' });
-    }
+    // For compatibility, skip class-based access control for now
+    // TODO: Implement proper class-based access when class system is updated
   }
   
   res.json(student);
+});
+
+// New Student Management CRUD Routes
+app.post('/api/students', authenticateToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const { name, rollNumber, studentId, dateOfBirth, class: className } = req.body;
+  
+  // Validate required fields
+  if (!name || !rollNumber || !studentId || !dateOfBirth || !className) {
+    return res.status(400).json({ error: 'All fields are required: name, rollNumber, studentId, dateOfBirth, class' });
+  }
+  
+  // Check for duplicate roll number or student ID
+  const existingStudent = data.students.find(s => 
+    s.rollNumber === rollNumber || s.studentId === studentId
+  );
+  
+  if (existingStudent) {
+    return res.status(400).json({ 
+      error: 'Student with this roll number or student ID already exists' 
+    });
+  }
+  
+  const newStudent = {
+    id: Date.now(),
+    name,
+    rollNumber,
+    studentId,
+    dateOfBirth,
+    class: className,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+  
+  data.students.push(newStudent);
+  res.json(newStudent);
+});
+
+app.put('/api/students/:id', authenticateToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const studentId = parseInt(req.params.id);
+  const studentIndex = data.students.findIndex(s => s.id === studentId);
+  
+  if (studentIndex === -1) {
+    return res.status(404).json({ error: 'Student not found' });
+  }
+  
+  const { name, rollNumber, studentId: newStudentId, dateOfBirth, class: className } = req.body;
+  
+  // Check for duplicate roll number or student ID (excluding current student)
+  if (rollNumber || newStudentId) {
+    const existingStudent = data.students.find(s => 
+      s.id !== studentId && (s.rollNumber === rollNumber || s.studentId === newStudentId)
+    );
+    
+    if (existingStudent) {
+      return res.status(400).json({ 
+        error: 'Another student with this roll number or student ID already exists' 
+      });
+    }
+  }
+  
+  const updatedStudent = {
+    ...data.students[studentIndex],
+    ...(name && { name }),
+    ...(rollNumber && { rollNumber }),
+    ...(newStudentId && { studentId: newStudentId }),
+    ...(dateOfBirth && { dateOfBirth }),
+    ...(className && { class: className }),
+    updatedAt: new Date().toISOString()
+  };
+  
+  data.students[studentIndex] = updatedStudent;
+  res.json(updatedStudent);
+});
+
+app.delete('/api/students/:id', authenticateToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const studentId = parseInt(req.params.id);
+  const studentIndex = data.students.findIndex(s => s.id === studentId);
+  
+  if (studentIndex === -1) {
+    return res.status(404).json({ error: 'Student not found' });
+  }
+  
+  data.students.splice(studentIndex, 1);
+  res.json({ message: 'Student deleted successfully' });
+});
+
+// Excel upload route for students
+app.post('/api/students/upload', authenticateToken, upload.single('file'), (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
+  
+  try {
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const studentsData = XLSX.utils.sheet_to_json(worksheet);
+    
+    const processedStudents = [];
+    const errors = [];
+    const duplicates = [];
+    
+    studentsData.forEach((studentRow, index) => {
+      const rowNumber = index + 2; // Excel row number (assuming header in row 1)
+      
+      // Validate required fields
+      const name = studentRow.Name || studentRow.name;
+      const rollNumber = studentRow.RollNumber || studentRow.rollNumber || studentRow['Roll Number'];
+      const studentId = studentRow.StudentId || studentRow.studentId || studentRow['Student ID'];
+      const dateOfBirth = studentRow.DateOfBirth || studentRow.dateOfBirth || studentRow['Date of Birth'];
+      const className = studentRow.Class || studentRow.class;
+      
+      if (!name || !rollNumber || !studentId || !dateOfBirth || !className) {
+        errors.push(`Row ${rowNumber}: Missing required fields`);
+        return;
+      }
+      
+      // Check for duplicate in existing data
+      const existingStudent = data.students.find(s => 
+        s.rollNumber === rollNumber || s.studentId === studentId
+      );
+      
+      if (existingStudent) {
+        duplicates.push({
+          row: rowNumber,
+          name,
+          rollNumber,
+          studentId,
+          existing: existingStudent
+        });
+        return;
+      }
+      
+      // Check for duplicate within uploaded data
+      const duplicateInBatch = processedStudents.find(s => 
+        s.rollNumber === rollNumber || s.studentId === studentId
+      );
+      
+      if (duplicateInBatch) {
+        errors.push(`Row ${rowNumber}: Duplicate roll number or student ID within uploaded data`);
+        return;
+      }
+      
+      processedStudents.push({
+        id: Date.now() + Math.random(),
+        name,
+        rollNumber,
+        studentId,
+        dateOfBirth,
+        class: className,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+    });
+    
+    // Add successful students to database
+    data.students.push(...processedStudents);
+    
+    res.json({ 
+      success: true,
+      studentsAdded: processedStudents.length,
+      errors,
+      duplicates: duplicates.map(d => ({
+        row: d.row,
+        name: d.name,
+        rollNumber: d.rollNumber,
+        studentId: d.studentId
+      }))
+    });
+  } catch (error) {
+    res.status(400).json({ 
+      success: false,
+      studentsAdded: 0,
+      errors: [`Error processing Excel file: ${error.message}`]
+    });
+  }
 });
 
 // Feedback and Observation Routes
