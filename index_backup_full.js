@@ -1712,6 +1712,220 @@ app.get('/api/generate-hpc/:studentId/:term', authenticateToken, (req, res) => {
   res.send(demoPdfBuffer);
 });
 
+// Clean up any remaining old code after this endpoint
+const generalInfo_unused = null; // This will be cleaned up
+  const assessments = data.assessments?.filter(a => a.studentId === studentId && a.term === term) || [];
+  const feedback = {
+    parent: data.feedback?.parent?.filter(f => f.studentId === studentId && f.term === term) || [],
+    student: data.feedback?.student?.filter(f => f.studentId === studentId && f.term === term) || [],
+    peer: data.feedback?.peer?.filter(f => f.studentId === studentId && f.term === term) || []
+  };
+  
+  // Create PDF document
+  const doc = new PDFDocument({ size: 'A4', margin: 40 });
+  
+  // Set response headers
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename=HPC_${student.name}_${term.toUpperCase()}.pdf`);
+  
+  // Pipe PDF to response
+  doc.pipe(res);
+  
+  let yPosition = 50;
+  
+  // Cover Page Header
+  doc.fontSize(24).fillColor('#2E86AB').text('HOLISTIC PROGRESS CARD', { align: 'center' });
+  doc.fontSize(18).fillColor('#A23B72').text('FOUNDATIONAL STAGE', { align: 'center' });
+  doc.moveDown(2);
+  
+  // Student Information Box
+  doc.rect(40, yPosition + 80, 515, 120).strokeColor('#2E86AB').stroke();
+  doc.fontSize(16).fillColor('#2E86AB').text('Student Information', 60, yPosition + 90);
+  doc.fontSize(12).fillColor('black')
+    .text(`Name: ${student.name}`, 60, yPosition + 120)
+    .text(`Roll Number: ${student.rollNumber}`, 60, yPosition + 140)
+    .text(`Class: ${student.class}`, 60, yPosition + 160)
+    .text(`Academic Term: ${term === 'term1' ? 'Term 1' : 'Term 2'}`, 300, yPosition + 120)
+    .text(`Age: ${student.age} years`, 300, yPosition + 140)
+    .text(`Generated: ${new Date().toLocaleDateString()}`, 300, yPosition + 160);
+  
+  doc.addPage();
+  yPosition = 50;
+  
+  // Section I: All About Me
+  doc.fontSize(18).fillColor('#2E86AB').text('Section I: All About Me', 40, yPosition);
+  yPosition += 30;
+  
+  doc.rect(40, yPosition, 515, 200).strokeColor('#E6F3FF').fillColor('#E6F3FF').fillAndStroke();
+  doc.fillColor('black').fontSize(11);
+  
+  const aboutMe = generalInfo.generalInfo || {};
+  const aboutMeFields = [
+    { label: 'My name is', value: aboutMe.myNameIs || 'Not provided' },
+    { label: 'Things I like', value: aboutMe.thingsILike || 'Not provided' },
+    { label: 'I live in', value: aboutMe.iLiveIn || 'Not provided' },
+    { label: 'My birthday', value: aboutMe.myBirthday || 'Not provided' },
+    { label: 'My friends are', value: aboutMe.myFriendsAre || 'Not provided' },
+    { label: 'My favourite colours', value: aboutMe.myFavouriteColours || 'Not provided' },
+    { label: 'My favourite foods', value: aboutMe.myFavouriteFoods || 'Not provided' }
+  ];
+  
+  let fieldY = yPosition + 15;
+  aboutMeFields.forEach(field => {
+    doc.font('Helvetica-Bold').text(`${field.label}: `, 50, fieldY);
+    doc.font('Helvetica').text(field.value, 150, fieldY);
+    fieldY += 25;
+  });
+  
+  yPosition += 220;
+  
+  // Section II: Glimpse of Myself and My Family
+  doc.fontSize(18).fillColor('#2E86AB').text('Section II: Glimpse of Myself and My Family', 40, yPosition);
+  yPosition += 30;
+  
+  doc.rect(40, yPosition, 515, 80).strokeColor('#E6F3FF').fillColor('#E6F3FF').fillAndStroke();
+  doc.fillColor('black').fontSize(11)
+    .text('Space for drawings and pictures of self and family', 50, yPosition + 15)
+    .text('(In actual implementation, this would include uploaded images)', 50, yPosition + 35)
+    .text('Child can express themselves through art and visual representation', 50, yPosition + 55);
+  
+  doc.addPage();
+  yPosition = 50;
+  
+  // Section III: Competencies
+  doc.fontSize(18).fillColor('#2E86AB').text('Section III: Competencies Assessment', 40, yPosition);
+  yPosition += 40;
+  
+  // Competency assessment levels explanation
+  doc.rect(40, yPosition, 515, 60).strokeColor('#FFE6CC').fillColor('#FFE6CC').fillAndStroke();
+  doc.fillColor('black').fontSize(10)
+    .text('Assessment Levels:', 50, yPosition + 10)
+    .text('🌱 Beginner: Tries to achieve with lot of support', 50, yPosition + 25)
+    .text('🌿 Progressive: Achieves with occasional support', 200, yPosition + 25)
+    .text('🌳 Proficient: Achieves independently', 400, yPosition + 25);
+  
+  yPosition += 80;
+  
+  // Domains assessment
+  const domains = [
+    'Physical Development',
+    'Socio-emotional and Ethical Development', 
+    'Cognitive Development',
+    'Language and Literacy Development',
+    'Aesthetic and Cultural Development'
+  ];
+  
+  domains.forEach(domain => {
+    doc.fontSize(14).fillColor('#A23B72').text(domain, 40, yPosition);
+    yPosition += 25;
+    
+    // Sample competencies for demonstration
+    doc.fontSize(10).fillColor('black')
+      .text('• Shows progress in domain-specific skills', 60, yPosition)
+      .text('• Demonstrates age-appropriate development', 60, yPosition + 15)
+      .text('• Engages actively in related activities', 60, yPosition + 30);
+    
+    // Assessment level indicator (sample)
+    doc.text('Current Level: 🌿 Progressive', 400, yPosition + 15);
+    
+    yPosition += 60;
+    
+    if (yPosition > 700) {
+      doc.addPage();
+      yPosition = 50;
+    }
+  });
+  
+  doc.addPage();
+  yPosition = 50;
+  
+  // Section IV: Learner's Profile by Teacher
+  doc.fontSize(18).fillColor('#2E86AB').text('Section IV: Learner\'s Profile by Teacher', 40, yPosition);
+  yPosition += 30;
+  
+  doc.rect(40, yPosition, 515, 150).strokeColor('#E6F3FF').fillColor('#E6F3FF').fillAndStroke();
+  doc.fillColor('black').fontSize(11)
+    .text('Teacher\'s Narrative Summary:', 50, yPosition + 15)
+    .text(`${student.name} demonstrates consistent engagement in classroom activities.`, 50, yPosition + 40)
+    .text('Shows particular strength in creative expression and social interaction.', 50, yPosition + 60)
+    .text('Areas for continued growth include mathematical reasoning and fine motor skills.', 50, yPosition + 80)
+    .text('Recommended support: Encourage hands-on learning experiences.', 50, yPosition + 100)
+    .text('Overall progress: Meeting developmental milestones appropriately.', 50, yPosition + 120);
+  
+  yPosition += 170;
+  
+  // Section V: Parent's Feedback
+  doc.fontSize(18).fillColor('#2E86AB').text('Section V: Parent\'s Feedback', 40, yPosition);
+  yPosition += 30;
+  
+  doc.rect(40, yPosition, 515, 100).strokeColor('#E6F3FF').fillColor('#E6F3FF').fillAndStroke();
+  doc.fillColor('black').fontSize(11);
+  
+  if (feedback.parent.length > 0) {
+    doc.text('Parent Observations:', 50, yPosition + 15);
+    feedback.parent.slice(0, 2).forEach((item, index) => {
+      doc.text(`• ${item.content}`, 50, yPosition + 35 + (index * 20));
+    });
+  } else {
+    doc.text('Parent feedback to be collected during parent-teacher meetings.', 50, yPosition + 15);
+    doc.text('This section will include home observations and parental insights.', 50, yPosition + 35);
+  }
+  
+  yPosition += 120;
+  
+  // Section VI: Self-Assessment
+  doc.fontSize(18).fillColor('#2E86AB').text('Section VI: Self-Assessment', 40, yPosition);
+  yPosition += 30;
+  
+  doc.rect(40, yPosition, 515, 80).strokeColor('#E6F3FF').fillColor('#E6F3FF').fillAndStroke();
+  doc.fillColor('black').fontSize(11)
+    .text('Student Self-Reflection (Age-appropriate):', 50, yPosition + 15)
+    .text('• Activities I enjoy most: Playing, drawing, storytelling', 50, yPosition + 35)
+    .text('• Things I find challenging: Writing letters, sitting still', 50, yPosition + 55);
+  
+  doc.addPage();
+  yPosition = 50;
+  
+  // Section VII: Peer Assessment
+  doc.fontSize(18).fillColor('#2E86AB').text('Section VII: Peer Assessment', 40, yPosition);
+  yPosition += 30;
+  
+  doc.rect(40, yPosition, 515, 100).strokeColor('#E6F3FF').fillColor('#E6F3FF').fillAndStroke();
+  doc.fillColor('black').fontSize(11);
+  
+  if (feedback.peer.length > 0) {
+    doc.text('Peer Feedback:', 50, yPosition + 15);
+    feedback.peer.slice(0, 2).forEach((item, index) => {
+      doc.text(`• ${item.content}`, 50, yPosition + 35 + (index * 20));
+    });
+  } else {
+    doc.text('Peer Assessment (Social Interaction Observations):', 50, yPosition + 15);
+    doc.text('• Works well in group activities', 50, yPosition + 35);
+    doc.text('• Shows empathy and cooperation with classmates', 50, yPosition + 55);
+  }
+  
+  yPosition += 120;
+  
+  // Section VIII: Portfolio
+  doc.fontSize(18).fillColor('#2E86AB').text('Section VIII: Portfolio', 40, yPosition);
+  yPosition += 30;
+  
+  doc.rect(40, yPosition, 515, 120).strokeColor('#E6F3FF').fillColor('#E6F3FF').fillAndStroke();
+  doc.fillColor('black').fontSize(11)
+    .text('Collection of Student Work:', 50, yPosition + 15)
+    .text('• Art and craft creations', 50, yPosition + 35)
+    .text('• Writing samples and drawings', 50, yPosition + 55)
+    .text('• Project work and activities', 50, yPosition + 75)
+    .text('(Physical portfolio items would accompany this report)', 50, yPosition + 95);
+  
+  // Footer
+  doc.fontSize(8).fillColor('#666666')
+    .text('Generated by ICAN Demo System | Following CBSE HPC Guidelines 2024', 40, 750, { align: 'center' });
+  
+  // Finalize PDF
+  doc.end();
+});
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
