@@ -309,13 +309,125 @@ const data = {
       ]
     }
   ],
+  rubricEntries: [
+    {
+      id: 1,
+      dimension: 'awareness',
+      level: 'stream',
+      entries: [
+        'Shows basic understanding of concept',
+        'Recognizes familiar patterns',
+        'Identifies simple elements',
+        'Demonstrates initial awareness',
+        'Notices obvious features'
+      ]
+    },
+    {
+      id: 2,
+      dimension: 'awareness',
+      level: 'mountain',
+      entries: [
+        'Demonstrates clear understanding',
+        'Explains concepts in own words',
+        'Makes connections between ideas',
+        'Shows deeper comprehension',
+        'Articulates key principles'
+      ]
+    },
+    {
+      id: 3,
+      dimension: 'awareness',
+      level: 'sky',
+      entries: [
+        'Exhibits mastery of concept',
+        'Teaches others effectively',
+        'Synthesizes complex information',
+        'Demonstrates expert understanding',
+        'Creates new insights'
+      ]
+    },
+    {
+      id: 4,
+      dimension: 'sensitivity',
+      level: 'stream',
+      entries: [
+        'Shows basic emotional awareness',
+        'Recognizes others\' feelings',
+        'Responds to simple social cues',
+        'Demonstrates beginning empathy',
+        'Notices when others need help'
+      ]
+    },
+    {
+      id: 5,
+      dimension: 'sensitivity',
+      level: 'mountain',
+      entries: [
+        'Demonstrates emotional intelligence',
+        'Shows genuine concern for others',
+        'Adapts behavior to social context',
+        'Supports peers effectively',
+        'Mediates simple conflicts'
+      ]
+    },
+    {
+      id: 6,
+      dimension: 'sensitivity',
+      level: 'sky',
+      entries: [
+        'Exhibits advanced emotional maturity',
+        'Leads with compassion',
+        'Creates inclusive environments',
+        'Advocates for others\' needs',
+        'Models exemplary social behavior'
+      ]
+    },
+    {
+      id: 7,
+      dimension: 'creativity',
+      level: 'stream',
+      entries: [
+        'Tries new approaches occasionally',
+        'Shows basic imaginative thinking',
+        'Combines familiar ideas',
+        'Demonstrates initial innovation',
+        'Explores different possibilities'
+      ]
+    },
+    {
+      id: 8,
+      dimension: 'creativity',
+      level: 'mountain',
+      entries: [
+        'Consistently generates original ideas',
+        'Takes creative risks confidently',
+        'Adapts and improves existing solutions',
+        'Shows flexible thinking patterns',
+        'Inspires creativity in others'
+      ]
+    },
+    {
+      id: 9,
+      dimension: 'creativity',
+      level: 'sky',
+      entries: [
+        'Produces breakthrough innovations',
+        'Transforms challenges into opportunities',
+        'Creates entirely new frameworks',
+        'Demonstrates visionary thinking',
+        'Influences creative culture'
+      ]
+    }
+  ],
   feedback: {
     general: [],
     parent: [],
     student: [],
     peer: []
   },
-  observations: []
+  observations: [],
+  portfolio: [],
+  assessments: []
 };
 
 // Auth middleware
@@ -1184,6 +1296,10 @@ app.get('/api/learning-outcomes', authenticateToken, (req, res) => {
   res.json(data.learningOutcomes);
 });
 
+app.get('/api/rubric-entries', authenticateToken, (req, res) => {
+  res.json(data.rubricEntries);
+});
+
 app.post('/api/activities', authenticateToken, (req, res) => {
   if (req.user.role !== 'teacher') {
     return res.status(403).json({ error: 'Teacher access required' });
@@ -1391,6 +1507,145 @@ app.delete('/api/activities/:id', authenticateToken, (req, res) => {
   
   data.activities.splice(activityIndex, 1);
   res.json({ message: 'Activity deleted successfully' });
+});
+
+// Portfolio routes
+app.get('/api/portfolio/:studentId', authenticateToken, (req, res) => {
+  const studentId = parseInt(req.params.studentId);
+  
+  if (req.user.role !== 'teacher') {
+    return res.status(403).json({ error: 'Teacher access required' });
+  }
+  
+  const portfolioItems = data.portfolio.filter(item => item.studentId === studentId);
+  res.json(portfolioItems);
+});
+
+app.post('/api/portfolio', authenticateToken, (req, res) => {
+  if (req.user.role !== 'teacher') {
+    return res.status(403).json({ error: 'Teacher access required' });
+  }
+  
+  const { studentId, title, description, category, imageUrl, fileName } = req.body;
+  
+  if (!title || !studentId || !imageUrl || !category) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  
+  const portfolioItem = {
+    id: Math.max(...data.portfolio.map(p => p.id), 0) + 1,
+    studentId: parseInt(studentId),
+    title,
+    description: description || '',
+    category,
+    imageUrl,
+    fileName: fileName || '',
+    teacherId: req.user.id,
+    createdAt: new Date().toISOString()
+  };
+  
+  data.portfolio.push(portfolioItem);
+  res.json(portfolioItem);
+});
+
+app.delete('/api/portfolio/:id', authenticateToken, (req, res) => {
+  const portfolioId = parseInt(req.params.id);
+  
+  if (req.user.role !== 'teacher') {
+    return res.status(403).json({ error: 'Teacher access required' });
+  }
+  
+  const portfolioIndex = data.portfolio.findIndex(p => p.id === portfolioId);
+  if (portfolioIndex === -1) {
+    return res.status(404).json({ error: 'Portfolio item not found' });
+  }
+  
+  // Check if teacher owns this portfolio item
+  if (data.portfolio[portfolioIndex].teacherId !== req.user.id) {
+    return res.status(403).json({ error: 'You can only delete your own portfolio items' });
+  }
+  
+  data.portfolio.splice(portfolioIndex, 1);
+  res.json({ message: 'Portfolio item deleted successfully' });
+});
+
+// Assessment routes
+app.post('/api/assessments', authenticateToken, (req, res) => {
+  if (req.user.role !== 'teacher') {
+    return res.status(403).json({ error: 'Teacher access required' });
+  }
+  
+  const { studentId, term, rubric } = req.body;
+  
+  if (!studentId || !term || !rubric) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  
+  const assessment = {
+    id: Math.max(...data.assessments.map(a => a.id), 0) + 1,
+    studentId: parseInt(studentId),
+    teacherId: req.user.id,
+    term,
+    rubric,
+    createdAt: new Date().toISOString()
+  };
+  
+  data.assessments.push(assessment);
+  res.json(assessment);
+});
+
+app.get('/api/assessments/:studentId', authenticateToken, (req, res) => {
+  const studentId = parseInt(req.params.studentId);
+  
+  if (req.user.role !== 'teacher') {
+    return res.status(403).json({ error: 'Teacher access required' });
+  }
+  
+  const assessments = data.assessments.filter(a => a.studentId === studentId);
+  res.json(assessments);
+});
+
+app.put('/api/assessments/:studentId/:term', authenticateToken, (req, res) => {
+  const studentId = parseInt(req.params.studentId);
+  const term = req.params.term;
+  
+  if (req.user.role !== 'teacher') {
+    return res.status(403).json({ error: 'Teacher access required' });
+  }
+  
+  const { rubric } = req.body;
+  
+  if (!rubric) {
+    return res.status(400).json({ error: 'Missing rubric data' });
+  }
+  
+  // Find existing assessment for this student and term
+  const assessmentIndex = data.assessments.findIndex(a => 
+    a.studentId === studentId && a.term === term
+  );
+  
+  if (assessmentIndex !== -1) {
+    // Update existing assessment
+    data.assessments[assessmentIndex] = {
+      ...data.assessments[assessmentIndex],
+      rubric,
+      updatedAt: new Date().toISOString()
+    };
+    res.json(data.assessments[assessmentIndex]);
+  } else {
+    // Create new assessment if none exists
+    const assessment = {
+      id: Math.max(...data.assessments.map(a => a.id), 0) + 1,
+      studentId,
+      teacherId: req.user.id,
+      term,
+      rubric,
+      createdAt: new Date().toISOString()
+    };
+    
+    data.assessments.push(assessment);
+    res.json(assessment);
+  }
 });
 
 app.listen(PORT, () => {
