@@ -558,22 +558,55 @@ app.post('/api/teachers/upload', authenticateToken, upload.single('file'), (req,
   }
   
   try {
-    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer', cellDates: true });
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
-    const teachers = XLSX.utils.sheet_to_json(worksheet);
+    const teachers = XLSX.utils.sheet_to_json(worksheet, { raw: false });
     
-    const processedTeachers = teachers.map(teacher => ({
-      id: Date.now() + Math.random(),
-      name: teacher.Name || teacher.name,
-      email: teacher.Email || teacher.email,
-      phone: teacher.Phone || teacher.phone,
-      subjects: teacher.Subjects ? teacher.Subjects.split(',').map(s => s.trim()) : [],
-      classes: teacher.Classes ? teacher.Classes.split(',').map(c => c.trim()) : [],
-      isClassTeacher: teacher.IsClassTeacher === 'true' || teacher.IsClassTeacher === true,
-      classTeacherFor: teacher.ClassTeacherFor || null,
-      createdAt: new Date().toISOString()
-    }));
+    const processedTeachers = teachers.map(teacher => {
+      // Parse classes
+      const classes = teacher.Classes ? teacher.Classes.split(',').map(c => c.trim()) : [];
+      
+      // Parse class-subject mappings
+      // Expected format in Excel: "Grade 1A:Math,Science;Grade 2B:English,Hindi"
+      let classSubjects = {};
+      let allSubjects = [];
+      
+      if (teacher.ClassSubjects) {
+        const mappings = teacher.ClassSubjects.split(';').map(m => m.trim());
+        mappings.forEach(mapping => {
+          const [className, subjectsStr] = mapping.split(':').map(s => s.trim());
+          if (className && subjectsStr) {
+            const subjects = subjectsStr.split(',').map(s => s.trim());
+            classSubjects[className] = subjects;
+            allSubjects.push(...subjects);
+          }
+        });
+      } else if (teacher.Subjects) {
+        // Fallback: If ClassSubjects not provided, use old format
+        // Apply all subjects to all classes
+        allSubjects = teacher.Subjects.split(',').map(s => s.trim());
+        classes.forEach(className => {
+          classSubjects[className] = allSubjects;
+        });
+      }
+      
+      // Remove duplicates from allSubjects
+      allSubjects = [...new Set(allSubjects)];
+      
+      return {
+        id: Date.now() + Math.random(),
+        name: teacher.Name || teacher.name,
+        email: teacher.Email || teacher.email,
+        phone: teacher.Phone || teacher.phone,
+        subjects: allSubjects,
+        classes: classes,
+        classSubjects: classSubjects,
+        isClassTeacher: teacher.IsClassTeacher === 'true' || teacher.IsClassTeacher === true,
+        classTeacherFor: teacher.ClassTeacherFor || null,
+        createdAt: new Date().toISOString()
+      };
+    });
     
     data.teachers.push(...processedTeachers);
     res.json({ message: `${processedTeachers.length} teachers uploaded successfully`, teachers: processedTeachers });
@@ -924,7 +957,7 @@ app.get('/api/students', authenticateToken, (req, res) => {
 });
 
 app.get('/api/students/:id', authenticateToken, (req, res) => {
-  const studentId = parseInt(req.params.id);
+  const studentId = parseFloat(req.params.id);
   const student = data.students.find(s => s.id === studentId);
   
   if (!student) {
@@ -985,7 +1018,7 @@ app.put('/api/students/:id', authenticateToken, (req, res) => {
     return res.status(403).json({ error: 'Admin access required' });
   }
   
-  const studentId = parseInt(req.params.id);
+  const studentId = parseFloat(req.params.id);
   const studentIndex = data.students.findIndex(s => s.id === studentId);
   
   if (studentIndex === -1) {
@@ -1036,7 +1069,7 @@ app.delete('/api/students/:id', authenticateToken, (req, res) => {
     return res.status(403).json({ error: 'Admin access required' });
   }
   
-  const studentId = parseInt(req.params.id);
+  const studentId = parseFloat(req.params.id);
   const studentIndex = data.students.findIndex(s => s.id === studentId);
   
   if (studentIndex === -1) {
@@ -1078,7 +1111,7 @@ app.post('/api/students/general-info', authenticateToken, (req, res) => {
 
 // Get student general info
 app.get('/api/students/:id/general-info', authenticateToken, (req, res) => {
-  const studentId = parseInt(req.params.id);
+  const studentId = parseFloat(req.params.id);
   const student = data.students.find(s => s.id === studentId);
   
   if (!student) {
@@ -1099,10 +1132,10 @@ app.post('/api/students/upload', authenticateToken, upload.single('file'), (req,
   }
   
   try {
-    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer', cellDates: true });
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
-    const studentsData = XLSX.utils.sheet_to_json(worksheet);
+    const studentsData = XLSX.utils.sheet_to_json(worksheet, { dateNF: 'yyyy-mm-dd', raw: false });
     
     const processedStudents = [];
     const errors = [];
@@ -1115,11 +1148,73 @@ app.post('/api/students/upload', authenticateToken, upload.single('file'), (req,
       const name = studentRow.Name || studentRow.name;
       const rollNumber = studentRow.RollNumber || studentRow.rollNumber || studentRow['Roll Number'];
       const studentId = studentRow.StudentId || studentRow.studentId || studentRow['Student ID'];
-      const dateOfBirth = studentRow.DateOfBirth || studentRow.dateOfBirth || studentRow['Date of Birth'];
-      const className = studentRow.Class || studentRow.class;
+      let dateOfBirth = studentRow.DateOfBirth || studentRow.dateOfBirth || studentRow['Date of Birth'];
       
-      if (!name || !rollNumber || !studentId || !dateOfBirth || !className) {
-        errors.push(`Row ${rowNumber}: Missing required fields`);
+      // Function to parse Excel dates properly
+      function parseExcelDate(dateValue) {
+        if (!dateValue) return null;
+        
+        // If it's already a string in YYYY-MM-DD format, return it
+        if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+          return dateValue;
+        }
+        
+        // If it's a Date object from Excel
+        if (dateValue instanceof Date) {
+          const year = dateValue.getFullYear();
+          const month = String(dateValue.getMonth() + 1).padStart(2, '0');
+          const day = String(dateValue.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        }
+        
+        // If it's an Excel serial number (number type)
+        if (typeof dateValue === 'number') {
+          // Excel dates start from 1900-01-01 (serial number 1)
+          // But Excel incorrectly treats 1900 as a leap year, so we need to adjust
+          const excelEpoch = new Date(1899, 11, 30); // December 30, 1899
+          const date = new Date(excelEpoch.getTime() + dateValue * 24 * 60 * 60 * 1000);
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        }
+        
+        // Try to parse as string date
+        try {
+          const date = new Date(dateValue);
+          if (!isNaN(date.getTime())) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+          }
+        } catch (e) {
+          // Fall through
+        }
+        
+        return dateValue; // Return as-is if we can't parse it
+      }
+      
+      // Parse the date of birth
+      dateOfBirth = parseExcelDate(dateOfBirth);
+      
+      // Optional fields for extended student information
+      const age = studentRow.Age || studentRow.age;
+      const parentContact = studentRow.ParentContact || studentRow.parentContact || studentRow['Parent Contact'];
+      const notes = studentRow.Notes || studentRow.notes || '';
+      const classId = studentRow.ClassId || studentRow.classId || studentRow['Class ID'] || 1;
+      
+      // Handle both old format (Class) and new format (Standard + Division)
+      const className = studentRow.Class || studentRow.class;
+      const standard = studentRow.Standard || studentRow.standard;
+      const division = studentRow.Division || studentRow.division;
+      
+      // Check if we have either the old format or new format
+      const hasOldFormat = className;
+      const hasNewFormat = standard && division;
+      
+      if (!name || !rollNumber || !studentId || !dateOfBirth || (!hasOldFormat && !hasNewFormat)) {
+        errors.push(`Row ${rowNumber}: Missing required fields (need Name, RollNumber, StudentId, DateOfBirth, and either Class OR Standard+Division)`);
         return;
       }
       
@@ -1149,16 +1244,55 @@ app.post('/api/students/upload', authenticateToken, upload.single('file'), (req,
         return;
       }
       
-      processedStudents.push({
+      // Create student object with proper standard/division handling
+      let studentData = {
         id: Date.now() + Math.random(),
         name,
         rollNumber,
         studentId,
         dateOfBirth,
-        class: className,
+        age: age || calculateAge(dateOfBirth),
+        parentContact: parentContact || '',
+        notes: notes || '',
+        classId: classId || 1,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
-      });
+      };
+
+      // Helper function to calculate age from date of birth
+      function calculateAge(dob) {
+        const birthDate = new Date(dob);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        return age;
+      }
+
+      if (hasNewFormat) {
+        // Use new format with separated standard and division
+        studentData.standard = standard;
+        studentData.division = division;
+        studentData.class = `Grade ${standard}${division}`; // Generate class name for compatibility
+      } else {
+        // Use old format - try to parse standard and division from class name
+        studentData.class = className;
+        
+        // Try to extract standard and division from class name (e.g., "Grade 1A" or "1A")
+        const classMatch = className.match(/(\d+)([A-Z])/);
+        if (classMatch) {
+          studentData.standard = classMatch[1];
+          studentData.division = classMatch[2];
+        } else {
+          // Fallback - couldn't parse, set defaults
+          studentData.standard = '1';
+          studentData.division = 'A';
+        }
+      }
+
+      processedStudents.push(studentData);
     });
     
     // Add successful students to database
@@ -1233,7 +1367,7 @@ app.post('/api/observations', authenticateToken, (req, res) => {
 });
 
 app.get('/api/feedback/:studentId', authenticateToken, (req, res) => {
-  const studentId = parseInt(req.params.studentId);
+  const studentId = parseFloat(req.params.studentId);
   
   if (req.user.role === 'teacher') {
     // Check if teacher has access to this student
@@ -1263,7 +1397,7 @@ app.get('/api/feedback/:studentId', authenticateToken, (req, res) => {
 });
 
 app.get('/api/observations/:studentId', authenticateToken, (req, res) => {
-  const studentId = parseInt(req.params.studentId);
+  const studentId = parseFloat(req.params.studentId);
   
   if (req.user.role === 'teacher') {
     // Check if teacher has access to this student
@@ -1399,7 +1533,7 @@ app.get('/api/activities/class/:classId', authenticateToken, (req, res) => {
 
 // Legacy endpoint for backward compatibility - now returns activities for student's class
 app.get('/api/activities/:studentId', authenticateToken, (req, res) => {
-  const studentId = parseInt(req.params.studentId);
+  const studentId = parseFloat(req.params.studentId);
   
   if (req.user.role === 'teacher') {
     // Check if teacher has access to this student
@@ -1514,7 +1648,7 @@ app.delete('/api/activities/:id', authenticateToken, (req, res) => {
 
 // Portfolio routes
 app.get('/api/portfolio/:studentId', authenticateToken, (req, res) => {
-  const studentId = parseInt(req.params.studentId);
+  const studentId = parseFloat(req.params.studentId);
   
   if (req.user.role !== 'teacher') {
     return res.status(403).json({ error: 'Teacher access required' });
@@ -1598,7 +1732,7 @@ app.post('/api/assessments', authenticateToken, (req, res) => {
 });
 
 app.get('/api/assessments/:studentId', authenticateToken, (req, res) => {
-  const studentId = parseInt(req.params.studentId);
+  const studentId = parseFloat(req.params.studentId);
   
   if (req.user.role !== 'teacher') {
     return res.status(403).json({ error: 'Teacher access required' });
@@ -1609,7 +1743,7 @@ app.get('/api/assessments/:studentId', authenticateToken, (req, res) => {
 });
 
 app.put('/api/assessments/:studentId/:term', authenticateToken, (req, res) => {
-  const studentId = parseInt(req.params.studentId);
+  const studentId = parseFloat(req.params.studentId);
   const term = req.params.term;
   
   if (req.user.role !== 'teacher') {
@@ -1685,7 +1819,7 @@ app.get('/api/demo-pdf-status', authenticateToken, (req, res) => {
 
 // HPC PDF Generation Endpoint (Demo Version)
 app.get('/api/generate-hpc/:studentId/:term', authenticateToken, (req, res) => {
-  const studentId = parseInt(req.params.studentId);
+  const studentId = parseFloat(req.params.studentId);
   const term = req.params.term;
   
   if (req.user.role !== 'teacher') {
@@ -1710,6 +1844,121 @@ app.get('/api/generate-hpc/:studentId/:term', authenticateToken, (req, res) => {
   
   // Send the demo PDF
   res.send(demoPdfBuffer);
+});
+
+// Template download endpoints
+app.get('/api/templates/student', authenticateToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const format = req.query.format || 'new'; // 'new' or 'legacy'
+  
+  let templateData;
+  let filename;
+  
+  if (format === 'legacy') {
+    templateData = [
+      {
+        'Name': 'John Doe',
+        'RollNumber': 'R001',
+        'StudentId': 'STU001',
+        'DateOfBirth': '2018-03-15',
+        'Age': 6,
+        'ParentContact': '+1234567890',
+        'Notes': 'Good at mathematics, needs help with reading',
+        'ClassId': 1,
+        'Class': 'Grade 1A'
+      },
+      {
+        'Name': 'Jane Smith',
+        'RollNumber': 'R002',
+        'StudentId': 'STU002',
+        'DateOfBirth': '2018-07-22',
+        'Age': 6,
+        'ParentContact': '+1234567891',
+        'Notes': 'Very creative, loves art activities',
+        'ClassId': 1,
+        'Class': 'Grade 1B'
+      }
+    ];
+    filename = 'student_import_template_legacy.xlsx';
+  } else {
+    templateData = [
+      {
+        'Name': 'John Doe',
+        'RollNumber': 'R001',
+        'StudentId': 'STU001',
+        'DateOfBirth': '2018-03-15',
+        'Age': 6,
+        'ParentContact': '+1234567890',
+        'Notes': 'Good at mathematics, needs help with reading',
+        'ClassId': 1,
+        'Standard': '1',
+        'Division': 'A'
+      },
+      {
+        'Name': 'Jane Smith',
+        'RollNumber': 'R002',
+        'StudentId': 'STU002',
+        'DateOfBirth': '2018-07-22',
+        'Age': 6,
+        'ParentContact': '+1234567891',
+        'Notes': 'Very creative, loves art activities',
+        'ClassId': 1,
+        'Standard': '1',
+        'Division': 'B'
+      }
+    ];
+    filename = 'student_import_template.xlsx';
+  }
+  
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(templateData);
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Students');
+  
+  const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+  
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+  res.send(buffer);
+});
+
+app.get('/api/templates/teacher', authenticateToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const templateData = [
+    {
+      'Name': 'Dr. Sarah Johnson',
+      'Email': 'sarah.johnson@school.edu',
+      'Phone': '+1234567890',
+      'Subjects': 'Math,Science',
+      'Classes': 'Grade 1A,Grade 1B',
+      'IsClassTeacher': 'true',
+      'ClassTeacherFor': 'Grade 1A'
+    },
+    {
+      'Name': 'Mr. David Wilson',
+      'Email': 'david.wilson@school.edu',
+      'Phone': '+1234567891',
+      'Subjects': 'English,Hindi',
+      'Classes': 'Grade 2A,Grade 2B',
+      'IsClassTeacher': 'false',
+      'ClassTeacherFor': ''
+    }
+  ];
+  
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.json_to_sheet(templateData);
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Teachers');
+  
+  const buffer = XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+  
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', 'attachment; filename="teacher_import_template.xlsx"');
+  res.send(buffer);
 });
 
 app.listen(PORT, () => {
