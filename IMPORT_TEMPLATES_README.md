@@ -1,6 +1,6 @@
 # Import Templates Guide
 
-This folder contains Excel template files that you can use to import student and teacher data into the ICAN system.
+This folder contains Excel template files that you can use to import student and teacher data into the e-Vriddhi system.
 
 ## Template Files
 
@@ -49,7 +49,7 @@ Use this template to import teacher data.
 2. Replace the sample data with your actual student information
 3. Ensure all required fields are filled
 4. Save the file
-5. In the ICAN system, go to Admin Dashboard → Student Management → Import Students
+5. In the e-Vriddhi system, go to Admin Dashboard → Student Management → Import Students
 6. Upload your filled Excel file
 
 ### For Teachers:
@@ -59,7 +59,7 @@ Use this template to import teacher data.
 4. For subjects, use only the available options: Math, English, Hindi, Science, Geography
 5. Use comma separation for multiple subjects or classes (no spaces after commas)
 6. Save the file
-7. In the ICAN system, go to Admin Dashboard → Teacher Management → Import Teachers
+7. In the e-Vriddhi system, go to Admin Dashboard → Teacher Management → Import Teachers
 8. Upload your filled Excel file
 
 ## Important Notes
