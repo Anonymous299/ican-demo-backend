@@ -248,6 +248,67 @@ const data = {
     { id: 4, name: 'Communication', description: 'Expressing ideas clearly and listening effectively' },
     { id: 5, name: 'Self-Regulation', description: 'Managing emotions and behaviors appropriately' }
   ],
+  learningOutcomes: [
+    {
+      id: 1,
+      domain: 'Physical Development',
+      outcomes: [
+        'Children will demonstrate improved gross motor skills through running, jumping, and climbing',
+        'Children will show enhanced fine motor control in drawing and writing activities',
+        'Children will practice healthy habits including proper hygiene and nutrition',
+        'Children will develop body awareness and spatial orientation',
+        'Children will learn basic safety rules and emergency procedures'
+      ]
+    },
+    {
+      id: 2,
+      domain: 'Cognitive Development',
+      outcomes: [
+        'Children will solve age-appropriate puzzles and logical problems',
+        'Children will demonstrate memory skills through recall activities',
+        'Children will ask questions and explore their environment systematically',
+        'Children will classify and categorize objects by various attributes',
+        'Children will understand cause and effect relationships',
+        'Children will develop pre-math concepts including counting and patterns'
+      ]
+    },
+    {
+      id: 3,
+      domain: 'Language Development',
+      outcomes: [
+        'Children will express thoughts and feelings clearly through spoken language',
+        'Children will listen attentively and follow multi-step instructions',
+        'Children will demonstrate interest in books and storytelling',
+        'Children will recognize letters and begin to understand print concepts',
+        'Children will expand vocabulary through meaningful conversations',
+        'Children will use language to solve problems and ask for help'
+      ]
+    },
+    {
+      id: 4,
+      domain: 'Socio-Emotional Development',
+      outcomes: [
+        'Children will form positive relationships with peers and adults',
+        'Children will express emotions appropriately and seek help when needed',
+        'Children will show empathy and consideration for others',
+        'Children will work cooperatively in group activities',
+        'Children will develop self-confidence and independence',
+        'Children will learn conflict resolution strategies'
+      ]
+    },
+    {
+      id: 5,
+      domain: 'Moral Development',
+      outcomes: [
+        'Children will demonstrate honesty in their interactions',
+        'Children will show respect for diversity and differences',
+        'Children will take responsibility for their actions and choices',
+        'Children will understand concepts of fairness and justice',
+        'Children will develop caring attitudes toward environment and community',
+        'Children will practice kindness and helpfulness toward others'
+      ]
+    }
+  ],
   feedback: {
     general: [],
     parent: [],
@@ -1119,6 +1180,10 @@ app.get('/api/activity-competencies', authenticateToken, (req, res) => {
   res.json(data.activityCompetencies);
 });
 
+app.get('/api/learning-outcomes', authenticateToken, (req, res) => {
+  res.json(data.learningOutcomes);
+});
+
 app.post('/api/activities', authenticateToken, (req, res) => {
   if (req.user.role !== 'teacher') {
     return res.status(403).json({ error: 'Teacher access required' });
@@ -1128,7 +1193,7 @@ app.post('/api/activities', authenticateToken, (req, res) => {
     classId, 
     title, 
     domainId, 
-    competencyId, 
+    competencyIds, 
     learningOutcomes, 
     rubric 
   } = req.body;
@@ -1148,8 +1213,8 @@ app.post('/api/activities', authenticateToken, (req, res) => {
     teacherId: req.user.id,
     title,
     domainId: parseInt(domainId),
-    competencyId: parseInt(competencyId),
-    learningOutcomes,
+    competencyIds: competencyIds || [],
+    learningOutcomes: learningOutcomes || [],
     rubric: {
       awareness: {
         stream: rubric?.awareness?.stream || '',
@@ -1190,12 +1255,25 @@ app.get('/api/activities/class/:classId', authenticateToken, (req, res) => {
   
   const activities = data.activities.filter(a => a.classId === classId);
   
-  // Enrich activities with domain and competency details
-  const enrichedActivities = activities.map(activity => ({
-    ...activity,
-    domain: data.domains.find(d => d.id === activity.domainId),
-    competency: data.activityCompetencies.find(c => c.id === activity.competencyId)
-  }));
+  // Enrich activities with domain and competencies details
+  const enrichedActivities = activities.map(activity => {
+    // Handle both old single competency structure and new array structure
+    let competencies = [];
+    if (activity.competencyIds && Array.isArray(activity.competencyIds)) {
+      // New array structure
+      competencies = activity.competencyIds.map(id => data.activityCompetencies.find(c => c.id === id)).filter(Boolean);
+    } else if (activity.competencyId) {
+      // Legacy single competency structure - convert to array
+      const competency = data.activityCompetencies.find(c => c.id === activity.competencyId);
+      if (competency) competencies = [competency];
+    }
+
+    return {
+      ...activity,
+      domain: data.domains.find(d => d.id === activity.domainId),
+      competencies
+    };
+  });
   
   res.json(enrichedActivities);
 });
@@ -1220,12 +1298,25 @@ app.get('/api/activities/:studentId', authenticateToken, (req, res) => {
     // Return activities for the student's class instead of student-specific activities
     const activities = data.activities.filter(a => a.classId === studentClass.id);
     
-    // Enrich activities with domain and competency details
-    const enrichedActivities = activities.map(activity => ({
-      ...activity,
-      domain: data.domains.find(d => d.id === activity.domainId),
-      competency: data.activityCompetencies.find(c => c.id === activity.competencyId)
-    }));
+    // Enrich activities with domain and competencies details
+    const enrichedActivities = activities.map(activity => {
+      // Handle both old single competency structure and new array structure
+      let competencies = [];
+      if (activity.competencyIds && Array.isArray(activity.competencyIds)) {
+        // New array structure
+        competencies = activity.competencyIds.map(id => data.activityCompetencies.find(c => c.id === id)).filter(Boolean);
+      } else if (activity.competencyId) {
+        // Legacy single competency structure - convert to array
+        const competency = data.activityCompetencies.find(c => c.id === activity.competencyId);
+        if (competency) competencies = [competency];
+      }
+
+      return {
+        ...activity,
+        domain: data.domains.find(d => d.id === activity.domainId),
+        competencies
+      };
+    });
     
     res.json(enrichedActivities);
   } else {
