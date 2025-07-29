@@ -871,6 +871,47 @@ app.delete('/api/students/:id', authenticateToken, (req, res) => {
   res.json({ message: 'Student deleted successfully' });
 });
 
+// Student General Info endpoint
+app.post('/api/students/general-info', authenticateToken, (req, res) => {
+  if (req.user.role !== 'teacher') {
+    return res.status(403).json({ error: 'Teacher access required' });
+  }
+  
+  const { studentId, generalInfo } = req.body;
+  
+  // Find the student
+  const student = data.students.find(s => s.id === parseInt(studentId));
+  if (!student) {
+    return res.status(404).json({ error: 'Student not found' });
+  }
+  
+  // Add general info to student record
+  if (!student.generalInfo) {
+    student.generalInfo = {};
+  }
+  
+  student.generalInfo = {
+    ...student.generalInfo,
+    ...generalInfo,
+    updatedAt: new Date().toISOString(),
+    updatedBy: req.user.id
+  };
+  
+  res.json({ message: 'General info saved successfully', generalInfo: student.generalInfo });
+});
+
+// Get student general info
+app.get('/api/students/:id/general-info', authenticateToken, (req, res) => {
+  const studentId = parseInt(req.params.id);
+  const student = data.students.find(s => s.id === studentId);
+  
+  if (!student) {
+    return res.status(404).json({ error: 'Student not found' });
+  }
+  
+  res.json(student.generalInfo || {});
+});
+
 // Excel upload route for students
 app.post('/api/students/upload', authenticateToken, upload.single('file'), (req, res) => {
   if (req.user.role !== 'admin') {
