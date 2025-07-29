@@ -101,18 +101,80 @@ const data = {
     { id: 2, name: 'Grade 1B', description: 'Afternoon class for 6-7 year olds', teacherId: 2, capacity: 20, currentEnrollment: 3 },
     { id: 3, name: 'Grade 2A', description: 'Advanced morning class', teacherId: null, capacity: 18, currentEnrollment: 0 }
   ],
-  competencies: {
-    'CG-1': [
-      { id: 1, title: 'Follows basic safety rules', description: 'Children understand and follow basic safety rules in various environments', createdAt: new Date().toISOString() },
-      { id: 2, title: 'Practices good hygiene habits', description: 'Children develop and maintain good personal hygiene practices', createdAt: new Date().toISOString() }
+  curricularGoals: {
+    'physical': [
+      {
+        id: 1,
+        title: 'CG-1: Children develop habits that keep them healthy and safe',
+        description: 'Focuses on health, safety, and well-being habits',
+        competencies: [
+          { id: 1, title: 'Practices good hygiene habits', description: 'Children develop and maintain good personal hygiene practices', createdAt: new Date().toISOString() },
+          { id: 2, title: 'Follows basic safety rules', description: 'Children understand and follow basic safety rules in various environments', createdAt: new Date().toISOString() }
+        ],
+        createdAt: new Date().toISOString()
+      },
+      {
+        id: 2,
+        title: 'CG-2: Children develop a fit and flexible body',
+        description: 'Promotes physical fitness and motor skills',
+        competencies: [
+          { id: 3, title: 'Demonstrates gross motor skills', description: 'Children show coordination in running, jumping, and climbing activities', createdAt: new Date().toISOString() },
+          { id: 4, title: 'Shows fine motor control', description: 'Children demonstrate precision in activities requiring hand-eye coordination', createdAt: new Date().toISOString() }
+        ],
+        createdAt: new Date().toISOString()
+      }
     ],
-    'CG-2': [
-      { id: 3, title: 'Distinguishes different textures', description: 'Children can identify and describe various textures through touch', createdAt: new Date().toISOString() },
-      { id: 4, title: 'Recognizes different sounds', description: 'Children can identify and differentiate various sounds in their environment', createdAt: new Date().toISOString() }
+    'cognitive': [
+      {
+        id: 3,
+        title: 'CG-3: Children develop cognitive abilities through exploration',
+        description: 'Develops thinking, reasoning, and problem-solving skills',
+        competencies: [
+          { id: 5, title: 'Solves age-appropriate problems', description: 'Children use logical thinking to solve problems and puzzles', createdAt: new Date().toISOString() },
+          { id: 6, title: 'Demonstrates memory skills', description: 'Children recall and use information from previous experiences', createdAt: new Date().toISOString() },
+          { id: 7, title: 'Shows curiosity and exploration', description: 'Children ask questions and investigate their environment', createdAt: new Date().toISOString() }
+        ],
+        createdAt: new Date().toISOString()
+      }
     ],
-    'CG-3': [
-      { id: 5, title: 'Demonstrates gross motor skills', description: 'Children show coordination in running, jumping, and climbing activities', createdAt: new Date().toISOString() },
-      { id: 6, title: 'Shows fine motor control', description: 'Children demonstrate precision in activities requiring hand-eye coordination', createdAt: new Date().toISOString() }
+    'language': [
+      {
+        id: 4,
+        title: 'CG-4: Children develop effective communication skills',
+        description: 'Promotes language development and communication abilities',
+        competencies: [
+          { id: 8, title: 'Expresses ideas clearly', description: 'Children communicate thoughts and feelings effectively through speech', createdAt: new Date().toISOString() },
+          { id: 9, title: 'Listens and follows instructions', description: 'Children demonstrate comprehension by following multi-step directions', createdAt: new Date().toISOString() },
+          { id: 10, title: 'Shows interest in reading and writing', description: 'Children engage with books and attempt writing activities', createdAt: new Date().toISOString() }
+        ],
+        createdAt: new Date().toISOString()
+      }
+    ],
+    'socio-emotional': [
+      {
+        id: 5,
+        title: 'CG-5: Children develop positive relationships and emotional regulation',
+        description: 'Focuses on social skills and emotional intelligence',
+        competencies: [
+          { id: 11, title: 'Builds positive relationships', description: 'Children form friendships and interact cooperatively with peers', createdAt: new Date().toISOString() },
+          { id: 12, title: 'Manages emotions appropriately', description: 'Children express feelings in healthy ways and seek help when needed', createdAt: new Date().toISOString() },
+          { id: 13, title: 'Shows empathy and kindness', description: 'Children demonstrate care and consideration for others', createdAt: new Date().toISOString() }
+        ],
+        createdAt: new Date().toISOString()
+      }
+    ],
+    'moral': [
+      {
+        id: 6,
+        title: 'CG-6: Children develop strong moral values and character',
+        description: 'Promotes ethical development and moral reasoning',
+        competencies: [
+          { id: 14, title: 'Demonstrates honesty and integrity', description: 'Children tell the truth and act with moral courage', createdAt: new Date().toISOString() },
+          { id: 15, title: 'Shows respect for diversity', description: 'Children appreciate differences and treat all people with respect', createdAt: new Date().toISOString() },
+          { id: 16, title: 'Takes responsibility for actions', description: 'Children acknowledge their choices and learn from mistakes', createdAt: new Date().toISOString() }
+        ],
+        createdAt: new Date().toISOString()
+      }
     ]
   },
   templates: {
@@ -173,11 +235,11 @@ const data = {
   },
   activities: [],
   domains: [
-    { id: 1, name: 'Physical Development', description: 'Motor skills and physical coordination' },
-    { id: 2, name: 'Cognitive Development', description: 'Thinking, reasoning, and problem-solving' },
-    { id: 3, name: 'Language Development', description: 'Communication and language skills' },
-    { id: 4, name: 'Social-Emotional Development', description: 'Social skills and emotional intelligence' },
-    { id: 5, name: 'Creative Expression', description: 'Arts, creativity, and self-expression' }
+    { id: 1, name: 'Physical Development', description: 'Motor skills, coordination, health, and physical well-being' },
+    { id: 2, name: 'Cognitive Development', description: 'Thinking, reasoning, problem-solving, and intellectual growth' },
+    { id: 3, name: 'Language Development', description: 'Communication, vocabulary, literacy, and expression skills' },
+    { id: 4, name: 'Socio-Emotional Development', description: 'Social skills, emotional regulation, and relationship building' },
+    { id: 5, name: 'Moral Development', description: 'Values, ethics, character building, and moral reasoning' }
   ],
   activityCompetencies: [
     { id: 1, name: 'Problem Solving', description: 'Ability to identify and solve problems creatively' },
@@ -349,7 +411,7 @@ app.get('/api/competencies', authenticateToken, (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
-  res.json(data.competencies);
+  res.json(data.curricularGoals);
 });
 
 app.get('/api/competencies/:domain', authenticateToken, (req, res) => {
@@ -358,11 +420,11 @@ app.get('/api/competencies/:domain', authenticateToken, (req, res) => {
   }
   
   const domain = req.params.domain;
-  if (!data.competencies[domain]) {
+  if (!data.curricularGoals[domain]) {
     return res.status(404).json({ error: 'Domain not found' });
   }
   
-  res.json(data.competencies[domain]);
+  res.json(data.curricularGoals[domain]);
 });
 
 app.post('/api/competencies/:domain', authenticateToken, (req, res) => {
@@ -371,20 +433,21 @@ app.post('/api/competencies/:domain', authenticateToken, (req, res) => {
   }
   
   const domain = req.params.domain;
-  if (!data.competencies[domain]) {
+  if (!data.curricularGoals[domain]) {
     return res.status(404).json({ error: 'Domain not found' });
   }
   
   const { title, description } = req.body;
-  const newCompetency = {
+  const newGoal = {
     id: Date.now(),
     title,
     description,
+    competencies: [],
     createdAt: new Date().toISOString()
   };
   
-  data.competencies[domain].push(newCompetency);
-  res.json(newCompetency);
+  data.curricularGoals[domain].push(newGoal);
+  res.json(newGoal);
 });
 
 app.put('/api/competencies/:domain/:id', authenticateToken, (req, res) => {
@@ -393,24 +456,24 @@ app.put('/api/competencies/:domain/:id', authenticateToken, (req, res) => {
   }
   
   const domain = req.params.domain;
-  const competencyId = parseInt(req.params.id);
+  const goalId = parseInt(req.params.id);
   
-  if (!data.competencies[domain]) {
+  if (!data.curricularGoals[domain]) {
     return res.status(404).json({ error: 'Domain not found' });
   }
   
-  const competencyIndex = data.competencies[domain].findIndex(c => c.id === competencyId);
-  if (competencyIndex === -1) {
-    return res.status(404).json({ error: 'Competency not found' });
+  const goalIndex = data.curricularGoals[domain].findIndex(g => g.id === goalId);
+  if (goalIndex === -1) {
+    return res.status(404).json({ error: 'Curricular goal not found' });
   }
   
-  data.competencies[domain][competencyIndex] = {
-    ...data.competencies[domain][competencyIndex],
+  data.curricularGoals[domain][goalIndex] = {
+    ...data.curricularGoals[domain][goalIndex],
     ...req.body,
     updatedAt: new Date().toISOString()
   };
   
-  res.json(data.competencies[domain][competencyIndex]);
+  res.json(data.curricularGoals[domain][goalIndex]);
 });
 
 app.delete('/api/competencies/:domain/:id', authenticateToken, (req, res) => {
@@ -419,18 +482,123 @@ app.delete('/api/competencies/:domain/:id', authenticateToken, (req, res) => {
   }
   
   const domain = req.params.domain;
-  const competencyId = parseInt(req.params.id);
+  const goalId = parseInt(req.params.id);
   
-  if (!data.competencies[domain]) {
+  if (!data.curricularGoals[domain]) {
     return res.status(404).json({ error: 'Domain not found' });
   }
   
-  const competencyIndex = data.competencies[domain].findIndex(c => c.id === competencyId);
+  const goalIndex = data.curricularGoals[domain].findIndex(g => g.id === goalId);
+  if (goalIndex === -1) {
+    return res.status(404).json({ error: 'Curricular goal not found' });
+  }
+  
+  data.curricularGoals[domain].splice(goalIndex, 1);
+  res.json({ message: 'Curricular goal deleted successfully' });
+});
+
+// Competency management within curricular goals
+app.post('/api/competencies/:domain/:goalId/competencies', authenticateToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const domain = req.params.domain;
+  const goalId = parseInt(req.params.goalId);
+  
+  if (!data.curricularGoals[domain]) {
+    return res.status(404).json({ error: 'Domain not found' });
+  }
+  
+  const goalIndex = data.curricularGoals[domain].findIndex(g => g.id === goalId);
+  if (goalIndex === -1) {
+    return res.status(404).json({ error: 'Curricular goal not found' });
+  }
+  
+  const { title, description } = req.body;
+  const goal = data.curricularGoals[domain][goalIndex];
+  const maxId = Math.max(...(goal.competencies?.map(c => c.id) || [0]), 0);
+  
+  const newCompetency = {
+    id: maxId + 1,
+    title,
+    description,
+    createdAt: new Date().toISOString()
+  };
+  
+  if (!goal.competencies) {
+    goal.competencies = [];
+  }
+  goal.competencies.push(newCompetency);
+  res.json(newCompetency);
+});
+
+app.put('/api/competencies/:domain/:goalId/competencies/:competencyId', authenticateToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const domain = req.params.domain;
+  const goalId = parseInt(req.params.goalId);
+  const competencyId = parseInt(req.params.competencyId);
+  
+  if (!data.curricularGoals[domain]) {
+    return res.status(404).json({ error: 'Domain not found' });
+  }
+  
+  const goalIndex = data.curricularGoals[domain].findIndex(g => g.id === goalId);
+  if (goalIndex === -1) {
+    return res.status(404).json({ error: 'Curricular goal not found' });
+  }
+  
+  const goal = data.curricularGoals[domain][goalIndex];
+  if (!goal.competencies) {
+    return res.status(404).json({ error: 'No competencies found' });
+  }
+  
+  const competencyIndex = goal.competencies.findIndex(c => c.id === competencyId);
   if (competencyIndex === -1) {
     return res.status(404).json({ error: 'Competency not found' });
   }
   
-  data.competencies[domain].splice(competencyIndex, 1);
+  goal.competencies[competencyIndex] = {
+    ...goal.competencies[competencyIndex],
+    ...req.body,
+    updatedAt: new Date().toISOString()
+  };
+  
+  res.json(goal.competencies[competencyIndex]);
+});
+
+app.delete('/api/competencies/:domain/:goalId/competencies/:competencyId', authenticateToken, (req, res) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const domain = req.params.domain;
+  const goalId = parseInt(req.params.goalId);
+  const competencyId = parseInt(req.params.competencyId);
+  
+  if (!data.curricularGoals[domain]) {
+    return res.status(404).json({ error: 'Domain not found' });
+  }
+  
+  const goalIndex = data.curricularGoals[domain].findIndex(g => g.id === goalId);
+  if (goalIndex === -1) {
+    return res.status(404).json({ error: 'Curricular goal not found' });
+  }
+  
+  const goal = data.curricularGoals[domain][goalIndex];
+  if (!goal.competencies) {
+    return res.status(404).json({ error: 'No competencies found' });
+  }
+  
+  const competencyIndex = goal.competencies.findIndex(c => c.id === competencyId);
+  if (competencyIndex === -1) {
+    return res.status(404).json({ error: 'Competency not found' });
+  }
+  
+  goal.competencies.splice(competencyIndex, 1);
   res.json({ message: 'Competency deleted successfully' });
 });
 
