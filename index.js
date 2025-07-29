@@ -41,6 +41,8 @@ const data = {
       rollNumber: 'R001', 
       studentId: 'STU001', 
       dateOfBirth: '2018-03-15', 
+      standard: '1',
+      division: 'A',
       class: 'Grade 1A', 
       createdAt: '2024-01-15T10:30:00.000Z',
       updatedAt: '2024-01-15T10:30:00.000Z'
@@ -51,6 +53,8 @@ const data = {
       rollNumber: 'R002', 
       studentId: 'STU002', 
       dateOfBirth: '2018-11-22', 
+      standard: '1',
+      division: 'A',
       class: 'Grade 1A',
       createdAt: '2024-01-15T10:31:00.000Z',
       updatedAt: '2024-01-15T10:31:00.000Z'
@@ -61,6 +65,8 @@ const data = {
       rollNumber: 'R003', 
       studentId: 'STU003', 
       dateOfBirth: '2018-07-08', 
+      standard: '1',
+      division: 'A',
       class: 'Grade 1A',
       createdAt: '2024-01-15T10:32:00.000Z',
       updatedAt: '2024-01-15T10:32:00.000Z'
@@ -71,6 +77,8 @@ const data = {
       rollNumber: 'R004', 
       studentId: 'STU004', 
       dateOfBirth: '2017-12-03', 
+      standard: '1',
+      division: 'B',
       class: 'Grade 1B',
       createdAt: '2024-01-15T10:33:00.000Z',
       updatedAt: '2024-01-15T10:33:00.000Z'
@@ -81,6 +89,8 @@ const data = {
       rollNumber: 'R005', 
       studentId: 'STU005', 
       dateOfBirth: '2017-09-18', 
+      standard: '1',
+      division: 'B',
       class: 'Grade 1B',
       createdAt: '2024-01-15T10:34:00.000Z',
       updatedAt: '2024-01-15T10:34:00.000Z'
@@ -233,6 +243,14 @@ app.post('/api/teachers', authenticateToken, (req, res) => {
   }
   
   const { name, email, phone, subjects, classes, isClassTeacher, classTeacherFor } = req.body;
+  
+  // Validate that classTeacherFor is one of the assigned classes
+  if (isClassTeacher && classTeacherFor && (!classes || !classes.includes(classTeacherFor))) {
+    return res.status(400).json({ 
+      error: 'Class teacher assignment must be for one of the assigned classes' 
+    });
+  }
+  
   const newTeacher = {
     id: Date.now(),
     name,
@@ -261,7 +279,17 @@ app.put('/api/teachers/:id', authenticateToken, (req, res) => {
     return res.status(404).json({ error: 'Teacher not found' });
   }
   
-  data.teachers[teacherIndex] = { ...data.teachers[teacherIndex], ...req.body };
+  const updatedTeacher = { ...data.teachers[teacherIndex], ...req.body };
+  
+  // Validate that classTeacherFor is one of the assigned classes
+  if (updatedTeacher.isClassTeacher && updatedTeacher.classTeacherFor && 
+      (!updatedTeacher.classes || !updatedTeacher.classes.includes(updatedTeacher.classTeacherFor))) {
+    return res.status(400).json({ 
+      error: 'Class teacher assignment must be for one of the assigned classes' 
+    });
+  }
+  
+  data.teachers[teacherIndex] = updatedTeacher;
   res.json(data.teachers[teacherIndex]);
 });
 
@@ -573,11 +601,11 @@ app.post('/api/students', authenticateToken, (req, res) => {
     return res.status(403).json({ error: 'Admin access required' });
   }
   
-  const { name, rollNumber, studentId, dateOfBirth, class: className } = req.body;
+  const { name, rollNumber, studentId, dateOfBirth, standard, division } = req.body;
   
   // Validate required fields
-  if (!name || !rollNumber || !studentId || !dateOfBirth || !className) {
-    return res.status(400).json({ error: 'All fields are required: name, rollNumber, studentId, dateOfBirth, class' });
+  if (!name || !rollNumber || !studentId || !dateOfBirth || !standard || !division) {
+    return res.status(400).json({ error: 'All fields are required: name, rollNumber, studentId, dateOfBirth, standard, division' });
   }
   
   // Check for duplicate roll number or student ID
@@ -597,7 +625,9 @@ app.post('/api/students', authenticateToken, (req, res) => {
     rollNumber,
     studentId,
     dateOfBirth,
-    class: className,
+    standard,
+    division,
+    class: `Grade ${standard}${division}`, // Computed field
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -618,7 +648,8 @@ app.put('/api/students/:id', authenticateToken, (req, res) => {
     return res.status(404).json({ error: 'Student not found' });
   }
   
-  const { name, rollNumber, studentId: newStudentId, dateOfBirth, class: className } = req.body;
+  const { name, rollNumber, studentId: newStudentId, dateOfBirth, standard, division } = req.body;
+  
   
   // Check for duplicate roll number or student ID (excluding current student)
   if (rollNumber || newStudentId) {
@@ -633,18 +664,27 @@ app.put('/api/students/:id', authenticateToken, (req, res) => {
     }
   }
   
-  const updatedStudent = {
-    ...data.students[studentIndex],
-    ...(name && { name }),
-    ...(rollNumber && { rollNumber }),
-    ...(newStudentId && { studentId: newStudentId }),
-    ...(dateOfBirth && { dateOfBirth }),
-    ...(className && { class: className }),
-    updatedAt: new Date().toISOString()
-  };
+  // Create updated student object with only provided fields
+  const updates = {};
+  if (name !== undefined && name !== null) updates.name = name;
+  if (rollNumber !== undefined && rollNumber !== null) updates.rollNumber = rollNumber;
+  if (newStudentId !== undefined && newStudentId !== null) updates.studentId = newStudentId;
+  if (dateOfBirth !== undefined && dateOfBirth !== null) updates.dateOfBirth = dateOfBirth;
+  if (standard !== undefined && standard !== null) updates.standard = standard;
+  if (division !== undefined && division !== null) updates.division = division;
   
-  data.students[studentIndex] = updatedStudent;
-  res.json(updatedStudent);
+  // Apply updates
+  Object.assign(data.students[studentIndex], updates);
+  
+  // Update computed class field if standard or division changed
+  if (updates.standard !== undefined || updates.division !== undefined) {
+    data.students[studentIndex].class = `Grade ${data.students[studentIndex].standard}${data.students[studentIndex].division}`;
+  }
+  
+  // Update timestamp
+  data.students[studentIndex].updatedAt = new Date().toISOString();
+  
+  res.json(data.students[studentIndex]);
 });
 
 app.delete('/api/students/:id', authenticateToken, (req, res) => {
