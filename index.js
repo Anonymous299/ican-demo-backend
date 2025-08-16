@@ -34,7 +34,9 @@ let demoPdfBuffer = null; // Store the uploaded demo PDF
 const data = {
   users: [
     { id: 1, email: 'admin@gmail.com', password: bcrypt.hashSync('12345', 10), role: 'admin' },
-    { id: 2, email: 'teacher@gmail.com', password: bcrypt.hashSync('12345', 10), role: 'teacher' }
+    { id: 2, email: 'teacher@gmail.com', password: bcrypt.hashSync('12345', 10), role: 'teacher' },
+    { id: 3, email: 'parent@gmail.com', password: bcrypt.hashSync('12345', 10), role: 'parent', studentIds: [1, 2] }, // Parent of Arjun and Priya
+    { id: 4, email: 'student@gmail.com', password: bcrypt.hashSync('12345', 10), role: 'student', studentId: 1 } // Arjun Sharma
   ],
   teachers: [],
   students: [
@@ -46,7 +48,21 @@ const data = {
       dateOfBirth: '2018-03-15', 
       standard: '1',
       division: 'A',
-      class: 'Grade 1A', 
+      class: 'Grade 1A',
+      apaarId: 'APAAR001',
+      address: '123 Main Street, Mumbai',
+      phone: '9876543210',
+      motherName: 'Sunita Sharma',
+      motherEducation: 'M.A. English',
+      motherOccupation: 'Teacher',
+      fatherName: 'Rajesh Sharma',
+      fatherEducation: 'B.Tech',
+      fatherOccupation: 'Software Engineer',
+      siblings: 1,
+      siblingAge: '5',
+      motherTongue: 'Hindi',
+      mediumOfInstruction: 'English',
+      isRural: false,
       createdAt: '2024-01-15T10:30:00.000Z',
       updatedAt: '2024-01-15T10:30:00.000Z'
     },
@@ -59,6 +75,20 @@ const data = {
       standard: '1',
       division: 'A',
       class: 'Grade 1A',
+      apaarId: 'APAAR002',
+      address: '456 Park Avenue, Mumbai',
+      phone: '9876543211',
+      motherName: 'Kavita Patel',
+      motherEducation: 'B.Com',
+      motherOccupation: 'Accountant',
+      fatherName: 'Mehul Patel',
+      fatherEducation: 'MBA',
+      fatherOccupation: 'Business Owner',
+      siblings: 0,
+      siblingAge: '',
+      motherTongue: 'Gujarati',
+      mediumOfInstruction: 'English',
+      isRural: false,
       createdAt: '2024-01-15T10:31:00.000Z',
       updatedAt: '2024-01-15T10:31:00.000Z'
     },
@@ -71,6 +101,20 @@ const data = {
       standard: '1',
       division: 'A',
       class: 'Grade 1A',
+      apaarId: 'APAAR003',
+      address: '789 Lake View, Bangalore',
+      phone: '9876543212',
+      motherName: 'Lakshmi Reddy',
+      motherEducation: 'M.Sc',
+      motherOccupation: 'Doctor',
+      fatherName: 'Venkat Reddy',
+      fatherEducation: 'MBBS',
+      fatherOccupation: 'Doctor',
+      siblings: 2,
+      siblingAge: '8,10',
+      motherTongue: 'Telugu',
+      mediumOfInstruction: 'English',
+      isRural: false,
       createdAt: '2024-01-15T10:32:00.000Z',
       updatedAt: '2024-01-15T10:32:00.000Z'
     },
@@ -83,6 +127,20 @@ const data = {
       standard: '1',
       division: 'B',
       class: 'Grade 1B',
+      apaarId: 'APAAR004',
+      address: '321 Green Colony, Delhi',
+      phone: '9876543213',
+      motherName: 'Neeta Gupta',
+      motherEducation: 'B.A.',
+      motherOccupation: 'Homemaker',
+      fatherName: 'Amit Gupta',
+      fatherEducation: 'CA',
+      fatherOccupation: 'Chartered Accountant',
+      siblings: 1,
+      siblingAge: '3',
+      motherTongue: 'Hindi',
+      mediumOfInstruction: 'English',
+      isRural: false,
       createdAt: '2024-01-15T10:33:00.000Z',
       updatedAt: '2024-01-15T10:33:00.000Z'
     },
@@ -95,6 +153,20 @@ const data = {
       standard: '1',
       division: 'B',
       class: 'Grade 1B',
+      apaarId: 'APAAR005',
+      address: '654 River Side, Pune',
+      phone: '9876543214',
+      motherName: 'Priya Singh',
+      motherEducation: 'Ph.D',
+      motherOccupation: 'Professor',
+      fatherName: 'Vikram Singh',
+      fatherEducation: 'M.Tech',
+      fatherOccupation: 'Architect',
+      siblings: 0,
+      siblingAge: '',
+      motherTongue: 'Hindi',
+      mediumOfInstruction: 'English',
+      isRural: false,
       createdAt: '2024-01-15T10:34:00.000Z',
       updatedAt: '2024-01-15T10:34:00.000Z'
     }
@@ -458,13 +530,32 @@ app.post('/api/auth/login', async (req, res) => {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
-  const token = jwt.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET);
-  res.json({ token, user: { id: user.id, email: user.email, role: user.role } });
+  // Add additional user data based on role
+  let userData = { id: user.id, email: user.email, role: user.role };
+  
+  if (user.role === 'parent' && user.studentIds) {
+    userData.studentIds = user.studentIds;
+    userData.children = data.students.filter(s => user.studentIds.includes(s.id));
+  } else if (user.role === 'student' && user.studentId) {
+    userData.studentId = user.studentId;
+    userData.studentData = data.students.find(s => s.id === user.studentId);
+  }
+
+  const token = jwt.sign({ id: user.id, email: user.email, role: user.role, studentIds: user.studentIds, studentId: user.studentId }, JWT_SECRET);
+  res.json({ token, user: userData });
 });
 
 // Protected routes
 app.get('/api/auth/me', authenticateToken, (req, res) => {
-  res.json(req.user);
+  let userData = { ...req.user };
+  
+  if (req.user.role === 'parent' && req.user.studentIds) {
+    userData.children = data.students.filter(s => req.user.studentIds.includes(s.id));
+  } else if (req.user.role === 'student' && req.user.studentId) {
+    userData.studentData = data.students.find(s => s.id === req.user.studentId);
+  }
+  
+  res.json(userData);
 });
 
 // Teacher Management Routes
@@ -978,11 +1069,16 @@ app.post('/api/students', authenticateToken, (req, res) => {
     return res.status(403).json({ error: 'Admin access required' });
   }
   
-  const { name, rollNumber, studentId, dateOfBirth, standard, division } = req.body;
+  const { 
+    name, rollNumber, studentId, dateOfBirth, standard, division,
+    apaarId, address, phone, motherName, motherEducation, motherOccupation,
+    fatherName, fatherEducation, fatherOccupation, siblings, siblingAge,
+    motherTongue, mediumOfInstruction, isRural
+  } = req.body;
   
   // Validate required fields
   if (!name || !rollNumber || !studentId || !dateOfBirth || !standard || !division) {
-    return res.status(400).json({ error: 'All fields are required: name, rollNumber, studentId, dateOfBirth, standard, division' });
+    return res.status(400).json({ error: 'Required fields: name, rollNumber, studentId, dateOfBirth, standard, division' });
   }
   
   // Check for duplicate roll number or student ID
@@ -1005,6 +1101,20 @@ app.post('/api/students', authenticateToken, (req, res) => {
     standard,
     division,
     class: `Grade ${standard}${division}`, // Computed field
+    apaarId: apaarId || '',
+    address: address || '',
+    phone: phone || '',
+    motherName: motherName || '',
+    motherEducation: motherEducation || '',
+    motherOccupation: motherOccupation || '',
+    fatherName: fatherName || '',
+    fatherEducation: fatherEducation || '',
+    fatherOccupation: fatherOccupation || '',
+    siblings: siblings || 0,
+    siblingAge: siblingAge || '',
+    motherTongue: motherTongue || '',
+    mediumOfInstruction: mediumOfInstruction || 'English',
+    isRural: isRural || false,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -1025,7 +1135,12 @@ app.put('/api/students/:id', authenticateToken, (req, res) => {
     return res.status(404).json({ error: 'Student not found' });
   }
   
-  const { name, rollNumber, studentId: newStudentId, dateOfBirth, standard, division } = req.body;
+  const { 
+    name, rollNumber, studentId: newStudentId, dateOfBirth, standard, division,
+    apaarId, address, phone, motherName, motherEducation, motherOccupation,
+    fatherName, fatherEducation, fatherOccupation, siblings, siblingAge,
+    motherTongue, mediumOfInstruction, isRural
+  } = req.body;
   
   
   // Check for duplicate roll number or student ID (excluding current student)
@@ -1049,6 +1164,20 @@ app.put('/api/students/:id', authenticateToken, (req, res) => {
   if (dateOfBirth !== undefined && dateOfBirth !== null) updates.dateOfBirth = dateOfBirth;
   if (standard !== undefined && standard !== null) updates.standard = standard;
   if (division !== undefined && division !== null) updates.division = division;
+  if (apaarId !== undefined && apaarId !== null) updates.apaarId = apaarId;
+  if (address !== undefined && address !== null) updates.address = address;
+  if (phone !== undefined && phone !== null) updates.phone = phone;
+  if (motherName !== undefined && motherName !== null) updates.motherName = motherName;
+  if (motherEducation !== undefined && motherEducation !== null) updates.motherEducation = motherEducation;
+  if (motherOccupation !== undefined && motherOccupation !== null) updates.motherOccupation = motherOccupation;
+  if (fatherName !== undefined && fatherName !== null) updates.fatherName = fatherName;
+  if (fatherEducation !== undefined && fatherEducation !== null) updates.fatherEducation = fatherEducation;
+  if (fatherOccupation !== undefined && fatherOccupation !== null) updates.fatherOccupation = fatherOccupation;
+  if (siblings !== undefined && siblings !== null) updates.siblings = siblings;
+  if (siblingAge !== undefined && siblingAge !== null) updates.siblingAge = siblingAge;
+  if (motherTongue !== undefined && motherTongue !== null) updates.motherTongue = motherTongue;
+  if (mediumOfInstruction !== undefined && mediumOfInstruction !== null) updates.mediumOfInstruction = mediumOfInstruction;
+  if (isRural !== undefined && isRural !== null) updates.isRural = isRural;
   
   // Apply updates
   Object.assign(data.students[studentIndex], updates);
