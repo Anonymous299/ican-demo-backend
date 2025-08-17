@@ -22,8 +22,36 @@ const PORT = process.env.PORT || 5050;
 // Configure multer for file uploads
 const upload = multer({ storage: multer.memoryStorage() });
 
+// CORS configuration
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:5173', 
+      'http://localhost:4173',
+      'https://ican-demo-frontend.vercel.app'
+    ];
+    
+    // Check if origin is in allowed list or matches Vercel pattern
+    if (allowedOrigins.indexOf(origin) !== -1 || 
+        origin.match(/^https:\/\/ican-demo-frontend-[a-z0-9]+-[a-z0-9]+\.vercel\.app$/)) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Disposition']
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Mount route modules
