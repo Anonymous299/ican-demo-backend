@@ -337,8 +337,14 @@ router.get('/:id/results', authenticateToken, (req, res) => {
 // Submit test answers (for students)
 router.post('/:id/submit', authenticateToken, (req, res) => {
   try {
+    console.log('=== Test Submission Debug ===');
+    console.log('User:', req.user);
+    console.log('Request body:', req.body);
+    console.log('Test ID:', req.params.id);
+
     // Only students can submit test answers
     if (req.user.role !== 'student') {
+      console.log('Error: User is not a student, role:', req.user.role);
       return res.status(403).json({ error: 'Only students can submit test answers' });
     }
 
@@ -346,22 +352,34 @@ router.post('/:id/submit', authenticateToken, (req, res) => {
     const test = (data.tests || []).find(t => t.id === testId);
     
     if (!test) {
+      console.log('Error: Test not found, testId:', testId);
       return res.status(404).json({ error: 'Test not found' });
     }
 
+    console.log('Found test:', test.title, 'Status:', test.status);
+
     // Check if test is published and available
     if (test.status !== 'published') {
+      console.log('Error: Test not published, status:', test.status);
       return res.status(400).json({ error: 'Test is not available for submission' });
     }
 
     const student = data.students.find(s => s.id === req.user.studentId);
     if (!student) {
+      console.log('Error: Student not found, studentId:', req.user.studentId);
+      console.log('Available students:', data.students.map(s => ({ id: s.id, name: s.name })));
       return res.status(404).json({ error: 'Student not found' });
     }
 
+    console.log('Found student:', student.name, 'Class:', student.class);
+
     // Verify student belongs to the test's class
     const studentClass = data.classes.find(c => c.name === student.class);
+    console.log('Student class:', studentClass);
+    console.log('Test classId:', test.classId);
+    
     if (!studentClass || test.classId !== studentClass.id) {
+      console.log('Error: Class mismatch. Student class ID:', studentClass?.id, 'Test class ID:', test.classId);
       return res.status(403).json({ error: 'You are not enrolled in this test\'s class' });
     }
 
@@ -376,10 +394,13 @@ router.post('/:id/submit', authenticateToken, (req, res) => {
     );
     
     if (existingSubmission) {
+      console.log('Error: Student already submitted this test');
       return res.status(400).json({ error: 'You have already submitted this test' });
     }
 
     const { answers, timeSpent } = req.body;
+    console.log('Received answers:', answers);
+    console.log('Time spent:', timeSpent);
 
     // Calculate score (basic implementation)
     let score = 0;
