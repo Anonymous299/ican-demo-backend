@@ -617,6 +617,120 @@ const data = {
       ]
     }
   ],
+  attendance: [
+    {
+      id: 1,
+      studentId: 1,
+      studentName: 'Arjun Sharma',
+      classId: 1,
+      className: 'Grade 1A',
+      date: '2024-01-15',
+      status: 'present',
+      timeIn: '09:00:00',
+      timeOut: '15:30:00',
+      remarks: '',
+      markedBy: 'teacher@gmail.com',
+      createdAt: '2024-01-15T09:00:00.000Z'
+    },
+    {
+      id: 2,
+      studentId: 2,
+      studentName: 'Priya Patel',
+      classId: 1,
+      className: 'Grade 1A',
+      date: '2024-01-15',
+      status: 'present',
+      timeIn: '09:05:00',
+      timeOut: '15:30:00',
+      remarks: '',
+      markedBy: 'teacher@gmail.com',
+      createdAt: '2024-01-15T09:05:00.000Z'
+    },
+    {
+      id: 3,
+      studentId: 3,
+      studentName: 'Kavya Reddy',
+      classId: 1,
+      className: 'Grade 1A',
+      date: '2024-01-15',
+      status: 'absent',
+      timeIn: null,
+      timeOut: null,
+      remarks: 'Sick leave',
+      markedBy: 'teacher@gmail.com',
+      createdAt: '2024-01-15T09:00:00.000Z'
+    },
+    {
+      id: 4,
+      studentId: 4,
+      studentName: 'Rohan Gupta',
+      classId: 2,
+      className: 'Grade 1B',
+      date: '2024-01-15',
+      status: 'present',
+      timeIn: '13:00:00',
+      timeOut: '19:30:00',
+      remarks: '',
+      markedBy: 'teacher@gmail.com',
+      createdAt: '2024-01-15T13:00:00.000Z'
+    },
+    {
+      id: 5,
+      studentId: 5,
+      studentName: 'Ananya Singh',
+      classId: 2,
+      className: 'Grade 1B',
+      date: '2024-01-15',
+      status: 'late',
+      timeIn: '13:30:00',
+      timeOut: '19:30:00',
+      remarks: 'Traffic delay',
+      markedBy: 'teacher@gmail.com',
+      createdAt: '2024-01-15T13:30:00.000Z'
+    },
+    {
+      id: 6,
+      studentId: 1,
+      studentName: 'Arjun Sharma',
+      classId: 1,
+      className: 'Grade 1A',
+      date: '2024-01-16',
+      status: 'present',
+      timeIn: '08:55:00',
+      timeOut: '15:30:00',
+      remarks: '',
+      markedBy: 'teacher@gmail.com',
+      createdAt: '2024-01-16T08:55:00.000Z'
+    },
+    {
+      id: 7,
+      studentId: 2,
+      studentName: 'Priya Patel',
+      classId: 1,
+      className: 'Grade 1A',
+      date: '2024-01-16',
+      status: 'present',
+      timeIn: '09:00:00',
+      timeOut: '15:30:00',
+      remarks: '',
+      markedBy: 'teacher@gmail.com',
+      createdAt: '2024-01-16T09:00:00.000Z'
+    },
+    {
+      id: 8,
+      studentId: 3,
+      studentName: 'Kavya Reddy',
+      classId: 1,
+      className: 'Grade 1A',
+      date: '2024-01-16',
+      status: 'present',
+      timeIn: '09:10:00',
+      timeOut: '15:30:00',
+      remarks: 'Feeling better',
+      markedBy: 'teacher@gmail.com',
+      createdAt: '2024-01-16T09:10:00.000Z'
+    }
+  ],
   feedback: {
     general: [],
     parent: [],
@@ -626,6 +740,231 @@ const data = {
   observations: [],
   portfolio: [],
   assessments: [],
+  tests: [
+    {
+      id: 1,
+      title: 'Math Assessment - Numbers 1-10',
+      description: 'Basic assessment on number recognition and counting skills',
+      subject: 'Mathematics',
+      classId: 1,
+      className: 'Grade 1A',
+      testType: 'quiz',
+      maxMarks: 20,
+      duration: 30,
+      scheduledDate: '2024-01-20',
+      instructions: 'Read each question carefully. Show your work where needed.',
+      questions: [
+        {
+          id: 1,
+          question: 'How many apples are there in the picture?',
+          type: 'multiple_choice',
+          options: ['3', '4', '5', '6'],
+          correctAnswer: '5',
+          marks: 2
+        },
+        {
+          id: 2,
+          question: 'Write the number that comes after 7.',
+          type: 'short_answer',
+          correctAnswer: '8',
+          marks: 2
+        },
+        {
+          id: 3,
+          question: 'Circle the biggest number: 3, 8, 5, 2',
+          type: 'multiple_choice',
+          options: ['3', '8', '5', '2'],
+          correctAnswer: '8',
+          marks: 2
+        },
+        {
+          id: 4,
+          question: 'Count and write how many stars: ⭐⭐⭐⭐⭐⭐',
+          type: 'short_answer',
+          correctAnswer: '6',
+          marks: 2
+        },
+        {
+          id: 5,
+          question: 'What number comes before 5?',
+          type: 'short_answer',
+          correctAnswer: '4',
+          marks: 2
+        }
+      ],
+      status: 'published',
+      createdBy: 1,
+      createdByName: 'Sarah Johnson',
+      createdAt: '2024-01-18T10:00:00.000Z',
+      updatedAt: '2024-01-18T10:00:00.000Z'
+    },
+    {
+      id: 2,
+      title: 'English - Letter Recognition Test',
+      description: 'Assessment on letter recognition and beginning sounds',
+      subject: 'English',
+      classId: 1,
+      className: 'Grade 1A',
+      testType: 'unit_test',
+      maxMarks: 25,
+      duration: 45,
+      scheduledDate: '2024-01-25',
+      instructions: 'Look at each letter or picture carefully before answering.',
+      questions: [
+        {
+          id: 1,
+          question: 'What letter does "Apple" start with?',
+          type: 'multiple_choice',
+          options: ['A', 'B', 'C', 'D'],
+          correctAnswer: 'A',
+          marks: 3
+        },
+        {
+          id: 2,
+          question: 'Write the lowercase letter for "B".',
+          type: 'short_answer',
+          correctAnswer: 'b',
+          marks: 3
+        },
+        {
+          id: 3,
+          question: 'Which letter comes after "M" in the alphabet?',
+          type: 'multiple_choice',
+          options: ['L', 'N', 'O', 'P'],
+          correctAnswer: 'N',
+          marks: 3
+        },
+        {
+          id: 4,
+          question: 'Circle the letter that makes the /s/ sound.',
+          type: 'multiple_choice',
+          options: ['R', 'S', 'T', 'U'],
+          correctAnswer: 'S',
+          marks: 3
+        },
+        {
+          id: 5,
+          question: 'Name three things that start with the letter "C".',
+          type: 'long_answer',
+          correctAnswer: 'Cat, Car, Cake (or any valid answers)',
+          marks: 4
+        }
+      ],
+      status: 'draft',
+      createdBy: 2,
+      createdByName: 'Michael Chen',
+      createdAt: '2024-01-19T14:30:00.000Z',
+      updatedAt: '2024-01-19T14:30:00.000Z'
+    },
+    {
+      id: 3,
+      title: 'Science Exploration Quiz',
+      description: 'Simple science concepts for early learners',
+      subject: 'Science',
+      classId: 2,
+      className: 'Grade 1B',
+      testType: 'quiz',
+      maxMarks: 15,
+      duration: 25,
+      scheduledDate: '2024-01-22',
+      instructions: 'Choose the best answer for each question.',
+      questions: [
+        {
+          id: 1,
+          question: 'What do plants need to grow?',
+          type: 'multiple_choice',
+          options: ['Water and sunlight', 'Only water', 'Only sunlight', 'Nothing'],
+          correctAnswer: 'Water and sunlight',
+          marks: 3
+        },
+        {
+          id: 2,
+          question: 'Which animal lives in water?',
+          type: 'multiple_choice',
+          options: ['Cat', 'Dog', 'Fish', 'Bird'],
+          correctAnswer: 'Fish',
+          marks: 3
+        },
+        {
+          id: 3,
+          question: 'What happens to ice when it gets warm?',
+          type: 'multiple_choice',
+          options: ['It gets harder', 'It melts', 'It stays the same', 'It becomes snow'],
+          correctAnswer: 'It melts',
+          marks: 3
+        },
+        {
+          id: 4,
+          question: 'How many legs does a spider have?',
+          type: 'short_answer',
+          correctAnswer: '8',
+          marks: 3
+        },
+        {
+          id: 5,
+          question: 'Name one way we can take care of our environment.',
+          type: 'short_answer',
+          correctAnswer: 'Pick up trash, plant trees, save water (any valid answer)',
+          marks: 3
+        }
+      ],
+      status: 'published',
+      createdBy: 3,
+      createdByName: 'Priya Sharma',
+      createdAt: '2024-01-17T11:00:00.000Z',
+      updatedAt: '2024-01-17T11:00:00.000Z'
+    }
+  ],
+  testResults: [
+    {
+      id: 1,
+      testId: 1,
+      studentId: 1,
+      studentName: 'Arjun Sharma',
+      answers: ['5', '8', '8', '6', '4'],
+      score: 20,
+      maxMarks: 20,
+      percentage: '100.00',
+      timeSpent: 25,
+      submittedAt: '2024-01-20T10:30:00.000Z',
+      status: 'graded',
+      feedback: 'Excellent work! Perfect score on all questions.',
+      gradedBy: 1,
+      gradedAt: '2024-01-20T15:00:00.000Z'
+    },
+    {
+      id: 2,
+      testId: 1,
+      studentId: 2,
+      studentName: 'Priya Patel',
+      answers: ['5', '8', '8', '7', '4'],
+      score: 18,
+      maxMarks: 20,
+      percentage: '90.00',
+      timeSpent: 28,
+      submittedAt: '2024-01-20T10:35:00.000Z',
+      status: 'graded',
+      feedback: 'Very good work! Small mistake on question 4.',
+      gradedBy: 1,
+      gradedAt: '2024-01-20T15:05:00.000Z'
+    },
+    {
+      id: 3,
+      testId: 3,
+      studentId: 4,
+      studentName: 'Rohan Gupta',
+      answers: ['Water and sunlight', 'Fish', 'It melts', '8', 'Plant trees'],
+      score: 15,
+      maxMarks: 15,
+      percentage: '100.00',
+      timeSpent: 22,
+      submittedAt: '2024-01-22T14:20:00.000Z',
+      status: 'graded',
+      feedback: 'Perfect score! Shows excellent understanding of basic science concepts.',
+      gradedBy: 3,
+      gradedAt: '2024-01-22T16:00:00.000Z'
+    }
+  ],
   lessonPlans: [
     {
       id: 1,
