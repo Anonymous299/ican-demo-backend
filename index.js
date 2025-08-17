@@ -10,6 +10,7 @@ const classRoutes = require('./routes/classes');
 const curriculumRoutes = require('./routes/curriculum');
 const attendanceRoutes = require('./routes/attendance');
 const testsRoutes = require('./routes/tests');
+const studentsRoutes = require('./routes/students');
 
 // Import middleware and data
 const { authenticateToken } = require('./middleware/auth');
@@ -32,6 +33,7 @@ app.use('/api/classes', classRoutes);
 app.use('/api/curriculum', curriculumRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/tests', testsRoutes);
+app.use('/api/students', studentsRoutes);
 
 // Competency management routes
 app.get('/api/competencies', authenticateToken, (req, res) => {
