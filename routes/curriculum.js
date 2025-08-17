@@ -4,13 +4,17 @@ const { authenticateToken } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Get all curriculum plans
+// Get all lesson plans
 router.get('/', authenticateToken, (req, res) => {
-  const { grade, subject } = req.query;
-  let plans = data.curriculumPlans || [];
+  const { grade, subject, teacher, class: className } = req.query;
+  let plans = data.lessonPlans || [];
   
-  if (grade) {
-    plans = plans.filter(plan => plan.grade === grade);
+  if (teacher) {
+    plans = plans.filter(plan => plan.teacher.toLowerCase().includes(teacher.toLowerCase()));
+  }
+  
+  if (className) {
+    plans = plans.filter(plan => plan.class === className);
   }
   
   if (subject) {
@@ -20,116 +24,116 @@ router.get('/', authenticateToken, (req, res) => {
   res.json(plans);
 });
 
-// Get curriculum plan by ID
+// Get lesson plan by ID
 router.get('/:id', authenticateToken, (req, res) => {
   const planId = parseInt(req.params.id);
-  const plan = data.curriculumPlans.find(p => p.id === planId);
+  const plan = data.lessonPlans.find(p => p.id === planId);
   
   if (!plan) {
-    return res.status(404).json({ error: 'Curriculum plan not found' });
+    return res.status(404).json({ error: 'Lesson plan not found' });
   }
   
   res.json(plan);
 });
 
-// Create curriculum plan
+// Create lesson plan
 router.post('/', authenticateToken, (req, res) => {
-  if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
-    return res.status(403).json({ error: 'Admin or teacher access required' });
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
   }
   
-  const { title, grade, subject, duration, description, objectives, units } = req.body;
+  const { title, teacher, teacherId, class: className, classId, subject, lessons } = req.body;
   
-  if (!title || !grade || !subject) {
-    return res.status(400).json({ error: 'Title, grade, and subject are required' });
+  if (!title || !teacher || !className || !subject) {
+    return res.status(400).json({ error: 'Title, teacher, class, and subject are required' });
   }
   
-  const maxId = Math.max(...data.curriculumPlans.map(p => p.id), 0);
+  const maxId = Math.max(...data.lessonPlans.map(p => p.id), 0);
   const newPlan = {
     id: maxId + 1,
     title,
-    grade,
+    teacher,
+    teacherId: teacherId || null,
+    class: className,
+    classId: classId || null,
     subject,
-    duration: duration || '1 Term',
-    description: description || '',
-    objectives: objectives || [],
-    units: units || [],
-    status: 'active',
+    academicYear: '2024-25',
+    lessons: lessons || [],
     createdBy: req.user.email,
     createdAt: new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
   
-  data.curriculumPlans.push(newPlan);
+  data.lessonPlans.push(newPlan);
   res.json(newPlan);
 });
 
-// Update curriculum plan
+// Update lesson plan
 router.put('/:id', authenticateToken, (req, res) => {
   if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
     return res.status(403).json({ error: 'Admin or teacher access required' });
   }
   
   const planId = parseInt(req.params.id);
-  const planIndex = data.curriculumPlans.findIndex(p => p.id === planId);
+  const planIndex = data.lessonPlans.findIndex(p => p.id === planId);
   
   if (planIndex === -1) {
-    return res.status(404).json({ error: 'Curriculum plan not found' });
+    return res.status(404).json({ error: 'Lesson plan not found' });
   }
   
-  const { title, grade, subject, duration, description, objectives, units, status } = req.body;
+  const { title, teacher, teacherId, class: className, classId, subject, lessons, academicYear } = req.body;
   
-  data.curriculumPlans[planIndex] = {
-    ...data.curriculumPlans[planIndex],
-    title: title || data.curriculumPlans[planIndex].title,
-    grade: grade || data.curriculumPlans[planIndex].grade,
-    subject: subject || data.curriculumPlans[planIndex].subject,
-    duration: duration || data.curriculumPlans[planIndex].duration,
-    description: description || data.curriculumPlans[planIndex].description,
-    objectives: objectives || data.curriculumPlans[planIndex].objectives,
-    units: units || data.curriculumPlans[planIndex].units,
-    status: status || data.curriculumPlans[planIndex].status,
+  data.lessonPlans[planIndex] = {
+    ...data.lessonPlans[planIndex],
+    title: title || data.lessonPlans[planIndex].title,
+    teacher: teacher || data.lessonPlans[planIndex].teacher,
+    teacherId: teacherId || data.lessonPlans[planIndex].teacherId,
+    class: className || data.lessonPlans[planIndex].class,
+    classId: classId || data.lessonPlans[planIndex].classId,
+    subject: subject || data.lessonPlans[planIndex].subject,
+    lessons: lessons || data.lessonPlans[planIndex].lessons,
+    academicYear: academicYear || data.lessonPlans[planIndex].academicYear,
     updatedAt: new Date().toISOString()
   };
   
-  res.json(data.curriculumPlans[planIndex]);
+  res.json(data.lessonPlans[planIndex]);
 });
 
-// Delete curriculum plan
+// Delete lesson plan
 router.delete('/:id', authenticateToken, (req, res) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   
   const planId = parseInt(req.params.id);
-  const planIndex = data.curriculumPlans.findIndex(p => p.id === planId);
+  const planIndex = data.lessonPlans.findIndex(p => p.id === planId);
   
   if (planIndex === -1) {
-    return res.status(404).json({ error: 'Curriculum plan not found' });
+    return res.status(404).json({ error: 'Lesson plan not found' });
   }
   
-  data.curriculumPlans.splice(planIndex, 1);
-  res.json({ message: 'Curriculum plan deleted successfully' });
+  data.lessonPlans.splice(planIndex, 1);
+  res.json({ message: 'Lesson plan deleted successfully' });
 });
 
-// Get curriculum plan statistics
+// Get lesson plan statistics
 router.get('/:id/stats', authenticateToken, (req, res) => {
   const planId = parseInt(req.params.id);
-  const plan = data.curriculumPlans.find(p => p.id === planId);
+  const plan = data.lessonPlans.find(p => p.id === planId);
   
   if (!plan) {
-    return res.status(404).json({ error: 'Curriculum plan not found' });
+    return res.status(404).json({ error: 'Lesson plan not found' });
   }
   
   const stats = {
     planId: plan.id,
     title: plan.title,
-    totalUnits: plan.units.length,
-    totalTopics: plan.units.reduce((sum, unit) => sum + (unit.topics?.length || 0), 0),
-    totalActivities: plan.units.reduce((sum, unit) => sum + (unit.activities?.length || 0), 0),
-    totalAssessments: plan.units.reduce((sum, unit) => sum + (unit.assessments?.length || 0), 0),
-    estimatedDuration: plan.duration,
-    status: plan.status,
+    totalLessons: plan.lessons.length,
+    totalActivities: plan.lessons.reduce((sum, lesson) => sum + (lesson.activities?.length || 0), 0),
+    totalPeriods: plan.lessons.reduce((sum, lesson) => sum + (lesson.estimatedPeriods || 0), 0),
+    teacher: plan.teacher,
+    class: plan.class,
+    subject: plan.subject,
     createdBy: plan.createdBy,
     lastUpdated: plan.updatedAt
   };
@@ -137,109 +141,107 @@ router.get('/:id/stats', authenticateToken, (req, res) => {
   res.json(stats);
 });
 
-// Add unit to curriculum plan
-router.post('/:id/units', authenticateToken, (req, res) => {
+// Add lesson to lesson plan
+router.post('/:id/lessons', authenticateToken, (req, res) => {
   if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
     return res.status(403).json({ error: 'Admin or teacher access required' });
   }
   
   const planId = parseInt(req.params.id);
-  const planIndex = data.curriculumPlans.findIndex(p => p.id === planId);
+  const planIndex = data.lessonPlans.findIndex(p => p.id === planId);
   
   if (planIndex === -1) {
-    return res.status(404).json({ error: 'Curriculum plan not found' });
+    return res.status(404).json({ error: 'Lesson plan not found' });
   }
   
-  const { title, duration, topics, activities, assessments } = req.body;
+  const { name, estimatedPeriods, learningOutcomes, activities } = req.body;
   
-  if (!title) {
-    return res.status(400).json({ error: 'Unit title is required' });
+  if (!name) {
+    return res.status(400).json({ error: 'Lesson name is required' });
   }
   
-  const plan = data.curriculumPlans[planIndex];
-  const maxUnitId = Math.max(...(plan.units?.map(u => u.id) || [0]), 0);
+  const plan = data.lessonPlans[planIndex];
+  const maxLessonId = Math.max(...(plan.lessons?.map(l => l.id) || [0]), 0);
   
-  const newUnit = {
-    id: maxUnitId + 1,
-    title,
-    duration: duration || '1 week',
-    topics: topics || [],
-    activities: activities || [],
-    assessments: assessments || []
+  const newLesson = {
+    id: maxLessonId + 1,
+    name,
+    estimatedPeriods: estimatedPeriods || 1,
+    learningOutcomes: learningOutcomes || [],
+    activities: activities || []
   };
   
-  if (!plan.units) {
-    plan.units = [];
+  if (!plan.lessons) {
+    plan.lessons = [];
   }
   
-  plan.units.push(newUnit);
+  plan.lessons.push(newLesson);
   plan.updatedAt = new Date().toISOString();
   
-  res.json(newUnit);
+  res.json(newLesson);
 });
 
-// Update unit in curriculum plan
-router.put('/:id/units/:unitId', authenticateToken, (req, res) => {
+// Update lesson in lesson plan
+router.put('/:id/lessons/:lessonId', authenticateToken, (req, res) => {
   if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
     return res.status(403).json({ error: 'Admin or teacher access required' });
   }
   
   const planId = parseInt(req.params.id);
-  const unitId = parseInt(req.params.unitId);
-  const planIndex = data.curriculumPlans.findIndex(p => p.id === planId);
+  const lessonId = parseInt(req.params.lessonId);
+  const planIndex = data.lessonPlans.findIndex(p => p.id === planId);
   
   if (planIndex === -1) {
-    return res.status(404).json({ error: 'Curriculum plan not found' });
+    return res.status(404).json({ error: 'Lesson plan not found' });
   }
   
-  const plan = data.curriculumPlans[planIndex];
-  const unitIndex = plan.units?.findIndex(u => u.id === unitId);
+  const plan = data.lessonPlans[planIndex];
+  const lessonIndex = plan.lessons?.findIndex(l => l.id === lessonId);
   
-  if (unitIndex === -1) {
-    return res.status(404).json({ error: 'Unit not found' });
+  if (lessonIndex === -1) {
+    return res.status(404).json({ error: 'Lesson not found' });
   }
   
-  const { title, duration, topics, activities, assessments } = req.body;
+  const { name, estimatedPeriods, learningOutcomes, activities } = req.body;
   
-  plan.units[unitIndex] = {
-    ...plan.units[unitIndex],
-    title: title || plan.units[unitIndex].title,
-    duration: duration || plan.units[unitIndex].duration,
-    topics: topics || plan.units[unitIndex].topics,
-    activities: activities || plan.units[unitIndex].activities,
-    assessments: assessments || plan.units[unitIndex].assessments
+  plan.lessons[lessonIndex] = {
+    ...plan.lessons[lessonIndex],
+    name: name || plan.lessons[lessonIndex].name,
+    estimatedPeriods: estimatedPeriods || plan.lessons[lessonIndex].estimatedPeriods,
+    learningOutcomes: learningOutcomes || plan.lessons[lessonIndex].learningOutcomes,
+    activities: activities || plan.lessons[lessonIndex].activities
   };
   
   plan.updatedAt = new Date().toISOString();
   
-  res.json(plan.units[unitIndex]);
+  res.json(plan.lessons[lessonIndex]);
 });
 
-// Delete unit from curriculum plan
-router.delete('/:id/units/:unitId', authenticateToken, (req, res) => {
+// Delete lesson from lesson plan
+router.delete('/:id/lessons/:lessonId', authenticateToken, (req, res) => {
   if (req.user.role !== 'admin' && req.user.role !== 'teacher') {
     return res.status(403).json({ error: 'Admin or teacher access required' });
   }
   
   const planId = parseInt(req.params.id);
-  const unitId = parseInt(req.params.unitId);
-  const planIndex = data.curriculumPlans.findIndex(p => p.id === planId);
+  const lessonId = parseInt(req.params.lessonId);
+  const planIndex = data.lessonPlans.findIndex(p => p.id === planId);
   
   if (planIndex === -1) {
-    return res.status(404).json({ error: 'Curriculum plan not found' });
+    return res.status(404).json({ error: 'Lesson plan not found' });
   }
   
-  const plan = data.curriculumPlans[planIndex];
-  const unitIndex = plan.units?.findIndex(u => u.id === unitId);
+  const plan = data.lessonPlans[planIndex];
+  const lessonIndex = plan.lessons?.findIndex(l => l.id === lessonId);
   
-  if (unitIndex === -1) {
-    return res.status(404).json({ error: 'Unit not found' });
+  if (lessonIndex === -1) {
+    return res.status(404).json({ error: 'Lesson not found' });
   }
   
-  plan.units.splice(unitIndex, 1);
+  plan.lessons.splice(lessonIndex, 1);
   plan.updatedAt = new Date().toISOString();
   
-  res.json({ message: 'Unit deleted successfully' });
+  res.json({ message: 'Lesson deleted successfully' });
 });
 
 module.exports = router;

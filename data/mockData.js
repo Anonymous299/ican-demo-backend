@@ -626,70 +626,264 @@ const data = {
   observations: [],
   portfolio: [],
   assessments: [],
-  curriculumPlans: [
+  lessonPlans: [
     {
       id: 1,
-      title: 'Mathematics Foundation Program',
-      grade: '1',
+      teacher: 'Sarah Johnson',
+      teacherId: 1,
+      class: 'Grade 1A',
+      classId: 1,
       subject: 'Mathematics',
-      duration: '1 Year',
-      description: 'Comprehensive mathematics curriculum for Grade 1 students focusing on foundational concepts',
-      objectives: [
-        'Develop number sense from 1-100',
-        'Understand basic addition and subtraction',
-        'Recognize patterns and shapes',
-        'Learn measurement concepts'
-      ],
-      units: [
+      title: 'Mathematics Foundation Program - Grade 1A',
+      academicYear: '2024-25',
+      createdBy: 'admin@gmail.com',
+      createdAt: '2024-01-15T10:00:00.000Z',
+      updatedAt: '2024-01-15T10:00:00.000Z',
+      lessons: [
         {
           id: 1,
-          title: 'Numbers 1-20',
-          duration: '4 weeks',
-          topics: ['Counting', 'Number recognition', 'Number writing', 'Comparing numbers'],
-          activities: ['Number games', 'Counting objects', 'Number tracing worksheets'],
-          assessments: ['Oral counting assessment', 'Number recognition quiz']
+          name: 'Counting 1-10',
+          estimatedPeriods: 5,
+          learningOutcomes: [
+            'Count objects from 1 to 10 accurately',
+            'Recognize and name number symbols 1-10',
+            'Demonstrate one-to-one correspondence'
+          ],
+          activities: [
+            {
+              id: 1,
+              name: 'Counting Bears Activity',
+              activityType: 'Individual',
+              gradingType: 'Rubric',
+              description: 'Students count colored bears and match to number cards',
+              materials: ['Counting bears', 'Number cards', 'Recording sheet']
+            },
+            {
+              id: 2,
+              name: 'Number Recognition Game',
+              activityType: 'Group',
+              gradingType: 'Marks',
+              description: 'Interactive game where students identify numbers called out',
+              materials: ['Number cards', 'Timer', 'Score sheet']
+            },
+            {
+              id: 3,
+              name: 'Number Writing Practice',
+              activityType: 'Homework',
+              gradingType: 'Rubric',
+              description: 'Practice writing numbers 1-10 with proper formation',
+              materials: ['Writing worksheets', 'Pencils', 'Number formation guide']
+            }
+          ]
         },
         {
           id: 2,
-          title: 'Basic Addition',
-          duration: '3 weeks',
-          topics: ['Addition concept', 'Adding with objects', 'Addition facts to 10'],
-          activities: ['Manipulative activities', 'Story problems', 'Addition games'],
-          assessments: ['Problem solving tasks', 'Addition facts test']
+          name: 'Counting 11-20',
+          estimatedPeriods: 4,
+          learningOutcomes: [
+            'Count objects from 11 to 20 accurately',
+            'Understand the structure of teen numbers',
+            'Recognize number patterns in teen numbers'
+          ],
+          activities: [
+            {
+              id: 4,
+              name: 'Teen Number Exploration',
+              activityType: 'Individual',
+              gradingType: 'Marks',
+              description: 'Explore teen numbers using tens and ones blocks',
+              materials: ['Base-10 blocks', 'Teen number cards', 'Recording sheets']
+            },
+            {
+              id: 5,
+              name: 'Number Line Walk',
+              activityType: 'Group',
+              gradingType: 'Rubric',
+              description: 'Physical number line activity for understanding sequence',
+              materials: ['Floor number line', 'Number cards', 'Movement instructions']
+            }
+          ]
+        },
+        {
+          id: 3,
+          name: 'Basic Addition Concepts',
+          estimatedPeriods: 6,
+          learningOutcomes: [
+            'Understand addition as combining groups',
+            'Use addition vocabulary correctly',
+            'Solve simple addition problems using objects'
+          ],
+          activities: [
+            {
+              id: 6,
+              name: 'Addition Stories',
+              activityType: 'Individual',
+              gradingType: 'Rubric',
+              description: 'Create and solve addition word problems',
+              materials: ['Story mats', 'Counting objects', 'Writing materials']
+            },
+            {
+              id: 7,
+              name: 'Addition with Manipulatives',
+              activityType: 'Group',
+              gradingType: 'Marks',
+              description: 'Hands-on addition using various objects',
+              materials: ['Various manipulatives', 'Addition boards', 'Recording sheets']
+            },
+            {
+              id: 8,
+              name: 'Family Addition Practice',
+              activityType: 'Homework',
+              gradingType: 'Rubric',
+              description: 'Practice addition at home with family members',
+              materials: ['Home practice sheets', 'Parent guide', 'Household objects']
+            }
+          ]
+        },
+        {
+          id: 4,
+          name: 'Number Comparison and Ordering',
+          estimatedPeriods: 3,
+          learningOutcomes: [
+            'Compare quantities using more, less, and equal',
+            'Order numbers from 1-20',
+            'Use comparison symbols appropriately'
+          ],
+          activities: [
+            {
+              id: 9,
+              name: 'Greater Than Less Than Game',
+              activityType: 'Group',
+              gradingType: 'Marks',
+              description: 'Interactive game comparing numbers using symbols',
+              materials: ['Number cards', 'Comparison symbols', 'Game boards']
+            },
+            {
+              id: 10,
+              name: 'Number Ordering Challenge',
+              activityType: 'Individual',
+              gradingType: 'Rubric',
+              description: 'Arrange numbers in ascending and descending order',
+              materials: ['Number cards', 'Sorting mats', 'Recording sheets']
+            }
+          ]
         }
-      ],
-      status: 'active',
-      createdBy: 'admin@gmail.com',
-      createdAt: '2024-01-15T10:00:00.000Z',
-      updatedAt: '2024-01-15T10:00:00.000Z'
+      ]
     },
     {
       id: 2,
-      title: 'Language Arts Exploration',
-      grade: '1',
+      teacher: 'Michael Chen',
+      teacherId: 2,
+      class: 'Grade 1A',
+      classId: 1,
       subject: 'English',
-      duration: '1 Year',
-      description: 'Integrated language arts program combining reading, writing, speaking, and listening',
-      objectives: [
-        'Develop phonemic awareness',
-        'Build sight word vocabulary',
-        'Encourage creative writing',
-        'Improve listening skills'
-      ],
-      units: [
-        {
-          id: 1,
-          title: 'Letter Sounds and Phonics',
-          duration: '6 weeks',
-          topics: ['Letter recognition', 'Phonetic sounds', 'Blending sounds', 'Simple words'],
-          activities: ['Phonics games', 'Sound sorting', 'Letter formation practice'],
-          assessments: ['Letter sound assessment', 'Reading readiness checklist']
-        }
-      ],
-      status: 'active',
-      createdBy: 'teacher@gmail.com',
+      title: 'Language Arts Foundation - Grade 1A',
+      academicYear: '2024-25',
+      createdBy: 'admin@gmail.com',
       createdAt: '2024-01-15T11:00:00.000Z',
-      updatedAt: '2024-01-15T11:00:00.000Z'
+      updatedAt: '2024-01-15T11:00:00.000Z',
+      lessons: [
+        {
+          id: 5,
+          name: 'Letter Recognition A-M',
+          estimatedPeriods: 8,
+          learningOutcomes: [
+            'Identify uppercase and lowercase letters A-M',
+            'Associate letters with beginning sounds',
+            'Write letters A-M with proper formation'
+          ],
+          activities: [
+            {
+              id: 11,
+              name: 'Letter Scavenger Hunt',
+              activityType: 'Group',
+              gradingType: 'Rubric',
+              description: 'Find objects around classroom that begin with letters A-M',
+              materials: ['Letter cards', 'Collection bags', 'Recording sheets']
+            },
+            {
+              id: 12,
+              name: 'Alphabet Book Creation',
+              activityType: 'Individual',
+              gradingType: 'Rubric',
+              description: 'Create personal alphabet book with drawings and letters',
+              materials: ['Blank books', 'Crayons', 'Letter stamps', 'Stickers']
+            },
+            {
+              id: 13,
+              name: 'Letter Formation Practice',
+              activityType: 'Homework',
+              gradingType: 'Marks',
+              description: 'Practice writing letters with family support',
+              materials: ['Practice sheets', 'Parent guide', 'Writing tools']
+            }
+          ]
+        },
+        {
+          id: 6,
+          name: 'Letter Recognition N-Z',
+          estimatedPeriods: 8,
+          learningOutcomes: [
+            'Identify uppercase and lowercase letters N-Z',
+            'Complete full alphabet recognition',
+            'Understand alphabetical order'
+          ],
+          activities: [
+            {
+              id: 14,
+              name: 'Alphabet Song and Dance',
+              activityType: 'Group',
+              gradingType: 'Rubric',
+              description: 'Learn alphabet through songs and movement',
+              materials: ['Music player', 'Alphabet song', 'Movement cards']
+            },
+            {
+              id: 15,
+              name: 'Letter Puzzle Challenge',
+              activityType: 'Individual',
+              gradingType: 'Marks',
+              description: 'Complete alphabet puzzles and sequence activities',
+              materials: ['Alphabet puzzles', 'Letter tiles', 'Sequence cards']
+            }
+          ]
+        },
+        {
+          id: 7,
+          name: 'Beginning Sounds and Phonics',
+          estimatedPeriods: 6,
+          learningOutcomes: [
+            'Identify beginning sounds in words',
+            'Match sounds to corresponding letters',
+            'Demonstrate phonemic awareness skills'
+          ],
+          activities: [
+            {
+              id: 16,
+              name: 'Sound Sorting Games',
+              activityType: 'Group',
+              gradingType: 'Marks',
+              description: 'Sort objects and pictures by beginning sounds',
+              materials: ['Picture cards', 'Sorting mats', 'Sound boxes']
+            },
+            {
+              id: 17,
+              name: 'Phonics Detective',
+              activityType: 'Individual',
+              gradingType: 'Rubric',
+              description: 'Find and identify beginning sounds in books',
+              materials: ['Simple books', 'Magnifying glasses', 'Sound charts']
+            },
+            {
+              id: 18,
+              name: 'Family Sound Hunt',
+              activityType: 'Homework',
+              gradingType: 'Rubric',
+              description: 'Search for objects at home with specific beginning sounds',
+              materials: ['Sound hunt sheets', 'Parent instructions', 'Collection bags']
+            }
+          ]
+        }
+      ]
     }
   ]
 };
