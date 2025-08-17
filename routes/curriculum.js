@@ -9,6 +9,16 @@ router.get('/', authenticateToken, (req, res) => {
   const { grade, subject, teacher, class: className } = req.query;
   let plans = data.lessonPlans || [];
   
+  // Role-based filtering
+  if (req.user.role === 'teacher') {
+    // Teachers can only see lesson plans for their assigned classes
+    const teacherClasses = data.classes.filter(cls => cls.teacherId === req.user.id);
+    const teacherClassIds = teacherClasses.map(cls => cls.id);
+    plans = plans.filter(plan => teacherClassIds.includes(plan.classId));
+  }
+  // Admin can see all plans (no additional filtering)
+  
+  // Apply query filters
   if (teacher) {
     plans = plans.filter(plan => plan.teacher.toLowerCase().includes(teacher.toLowerCase()));
   }
@@ -32,6 +42,17 @@ router.get('/:id', authenticateToken, (req, res) => {
   if (!plan) {
     return res.status(404).json({ error: 'Lesson plan not found' });
   }
+
+  // Role-based access control
+  if (req.user.role === 'teacher') {
+    // Teachers can only access lesson plans for their assigned classes
+    const teacherClasses = data.classes.filter(cls => cls.teacherId === req.user.id);
+    const teacherClassIds = teacherClasses.map(cls => cls.id);
+    if (!teacherClassIds.includes(plan.classId)) {
+      return res.status(403).json({ error: 'Access denied to this lesson plan' });
+    }
+  }
+  // Admin can access all plans
   
   res.json(plan);
 });
