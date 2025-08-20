@@ -11,9 +11,15 @@ const data = {
   teachers: [
     {
       id: 1,
-      name: 'Sarah Johnson',
-      email: 'sarah.johnson@school.com',
-      subject: 'Mathematics',
+      name: 'Kavita Sharma',
+      email: 'kavita.sharma@school.com',
+      subjects: ['Mathematics', 'Science'],
+      classes: ['Grade 1A', 'Grade 2A', 'Grade 3A'],
+      classSubjects: {
+        'Grade 1A': ['Mathematics'],
+        'Grade 2A': ['Mathematics', 'Science'],
+        'Grade 3A': ['Mathematics']
+      },
       phone: '9876543201',
       experience: 8,
       qualification: 'M.Sc Mathematics, B.Ed',
@@ -24,14 +30,21 @@ const data = {
     },
     {
       id: 2,
-      name: 'Michael Chen',
-      email: 'michael.chen@school.com',
-      subject: 'English',
+      name: 'Rahul Verma',
+      email: 'rahul.verma@school.com',
+      subjects: ['English', 'Hindi'],
+      classes: ['Grade 1A', 'Grade 1B', 'Grade 2A', 'Grade 2B'],
+      classSubjects: {
+        'Grade 1A': ['English'],
+        'Grade 1B': ['English', 'Hindi'],
+        'Grade 2A': ['English'],
+        'Grade 2B': ['English', 'Hindi']
+      },
       phone: '9876543202',
       experience: 5,
       qualification: 'M.A English Literature, B.Ed',
       isClassTeacher: false,
-      classTeacherFor: '',
+      classTeacherFor: null,
       createdAt: '2024-01-10T09:30:00.000Z',
       updatedAt: '2024-01-10T09:30:00.000Z'
     },
@@ -39,7 +52,14 @@ const data = {
       id: 3,
       name: 'Priya Sharma',
       email: 'priya.sharma@school.com',
-      subject: 'Science',
+      subjects: ['Science', 'Mathematics'],
+      classes: ['Grade 3A', 'Grade 3B', 'Grade 4A', 'Grade 4B'],
+      classSubjects: {
+        'Grade 3A': ['Science'],
+        'Grade 3B': ['Science', 'Mathematics'],
+        'Grade 4A': ['Science'],
+        'Grade 4B': ['Science']
+      },
       phone: '9876543203',
       experience: 12,
       qualification: 'M.Sc Physics, B.Ed',
@@ -50,14 +70,21 @@ const data = {
     },
     {
       id: 4,
-      name: 'David Williams',
-      email: 'david.williams@school.com',
-      subject: 'Social Studies',
+      name: 'Amit Desai',
+      email: 'amit.desai@school.com',
+      subjects: ['Social Studies', 'Geography'],
+      classes: ['Grade 3A', 'Grade 3B', 'Grade 4A', 'Grade 5A'],
+      classSubjects: {
+        'Grade 3A': ['Social Studies'],
+        'Grade 3B': ['Social Studies'],
+        'Grade 4A': ['Social Studies', 'Geography'],
+        'Grade 5A': ['Geography']
+      },
       phone: '9876543204',
       experience: 6,
       qualification: 'M.A History, B.Ed',
       isClassTeacher: false,
-      classTeacherFor: '',
+      classTeacherFor: null,
       createdAt: '2024-01-10T10:30:00.000Z',
       updatedAt: '2024-01-10T10:30:00.000Z'
     },
@@ -65,12 +92,21 @@ const data = {
       id: 5,
       name: 'Anita Patel',
       email: 'anita.patel@school.com',
-      subject: 'Art & Craft',
+      subjects: ['Art & Craft', 'Drawing'],
+      classes: ['Grade 1A', 'Grade 1B', 'Grade 2A', 'Grade 2B', 'Grade 3A', 'Grade 3B'],
+      classSubjects: {
+        'Grade 1A': ['Art & Craft'],
+        'Grade 1B': ['Art & Craft'],
+        'Grade 2A': ['Art & Craft', 'Drawing'],
+        'Grade 2B': ['Art & Craft', 'Drawing'],
+        'Grade 3A': ['Drawing'],
+        'Grade 3B': ['Drawing']
+      },
       phone: '9876543205',
       experience: 10,
       qualification: 'BFA, Diploma in Education',
       isClassTeacher: false,
-      classTeacherFor: '',
+      classTeacherFor: null,
       createdAt: '2024-01-10T11:00:00.000Z',
       updatedAt: '2024-01-10T11:00:00.000Z'
     },
@@ -78,7 +114,18 @@ const data = {
       id: 6,
       name: 'Rajesh Kumar',
       email: 'rajesh.kumar@school.com',
-      subject: 'Physical Education',
+      subjects: ['Physical Education', 'Sports'],
+      classes: ['Grade 1A', 'Grade 1B', 'Grade 2A', 'Grade 2B', 'Grade 3A', 'Grade 3B', 'Grade 4A', 'Grade 4B'],
+      classSubjects: {
+        'Grade 1A': ['Physical Education'],
+        'Grade 1B': ['Physical Education'],
+        'Grade 2A': ['Physical Education'],
+        'Grade 2B': ['Physical Education'],
+        'Grade 3A': ['Physical Education', 'Sports'],
+        'Grade 3B': ['Physical Education', 'Sports'],
+        'Grade 4A': ['Physical Education', 'Sports'],
+        'Grade 4B': ['Physical Education', 'Sports']
+      },
       phone: '9876543206',
       experience: 7,
       qualification: 'B.P.Ed, M.P.Ed',
@@ -89,14 +136,22 @@ const data = {
     },
     {
       id: 7,
-      name: 'Lisa Thompson',
-      email: 'lisa.thompson@school.com',
-      subject: 'Music',
+      name: 'Meera Nair',
+      email: 'meera.nair@school.com',
+      subjects: ['Music', 'Dance'],
+      classes: ['Grade 1A', 'Grade 1B', 'Grade 2A', 'Grade 2B', 'Grade 3A'],
+      classSubjects: {
+        'Grade 1A': ['Music'],
+        'Grade 1B': ['Music'],
+        'Grade 2A': ['Music', 'Dance'],
+        'Grade 2B': ['Music', 'Dance'],
+        'Grade 3A': ['Dance']
+      },
       phone: '9876543207',
       experience: 4,
       qualification: 'B.Mus, Certificate in Music Education',
       isClassTeacher: false,
-      classTeacherFor: '',
+      classTeacherFor: null,
       createdAt: '2024-01-10T12:00:00.000Z',
       updatedAt: '2024-01-10T12:00:00.000Z'
     },
@@ -104,7 +159,16 @@ const data = {
       id: 8,
       name: 'Vikram Singh',
       email: 'vikram.singh@school.com',
-      subject: 'Hindi',
+      subjects: ['Hindi', 'Sanskrit'],
+      classes: ['Grade 3A', 'Grade 3B', 'Grade 4A', 'Grade 4B', 'Grade 5A', 'Grade 5B'],
+      classSubjects: {
+        'Grade 3A': ['Hindi'],
+        'Grade 3B': ['Hindi'],
+        'Grade 4A': ['Hindi', 'Sanskrit'],
+        'Grade 4B': ['Hindi', 'Sanskrit'],
+        'Grade 5A': ['Hindi', 'Sanskrit'],
+        'Grade 5B': ['Hindi']
+      },
       phone: '9876543208',
       experience: 9,
       qualification: 'M.A Hindi Literature, B.Ed',
@@ -794,7 +858,7 @@ const data = {
       ],
       status: 'published',
       createdBy: 1,
-      createdByName: 'Sarah Johnson',
+      createdByName: 'Kavita Sharma',
       createdAt: '2024-01-18T10:00:00.000Z',
       updatedAt: '2024-01-18T10:00:00.000Z'
     },
@@ -852,7 +916,7 @@ const data = {
       ],
       status: 'draft',
       createdBy: 2,
-      createdByName: 'Michael Chen',
+      createdByName: 'Rahul Verma',
       createdAt: '2024-01-19T14:30:00.000Z',
       updatedAt: '2024-01-19T14:30:00.000Z'
     },
@@ -968,7 +1032,7 @@ const data = {
   lessonPlans: [
     {
       id: 1,
-      teacher: 'Sarah Johnson',
+      teacher: 'Kavita Sharma',
       teacherId: 1,
       class: 'Grade 1A',
       classId: 1,
@@ -1111,7 +1175,7 @@ const data = {
     },
     {
       id: 2,
-      teacher: 'Michael Chen',
+      teacher: 'Rahul Verma',
       teacherId: 2,
       class: 'Grade 1A',
       classId: 1,
