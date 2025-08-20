@@ -321,9 +321,11 @@ app.post('/api/upload-demo-pdf', authenticateToken, upload.single('demoPdf'), (r
 });
 
 app.get('/api/demo-pdf-status', authenticateToken, (req, res) => {
+  const buffer = demoPdfBuffer.get();
   res.json({
-    hasDemo: !!demoPdfBuffer.get(),
-    uploadedAt: demoPdfBuffer.get() ? new Date().toISOString() : null
+    available: !!buffer,
+    size: buffer ? buffer.length : 0,
+    uploadedAt: buffer ? new Date().toISOString() : null
   });
 });
 
